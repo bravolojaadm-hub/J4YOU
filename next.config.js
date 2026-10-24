@@ -4,6 +4,11 @@ const nextConfig = {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co' }
     ]
+  },
+  async rewrites() {
+    return [
+      { source: '/app.html', destination: '/app.html' }
+    ];
   }
 };
 
