@@ -1,0 +1,189 @@
+/*
+ * J4You — camada visual da identidade Creative Paper Club
+ * Adicione este arquivo em /public/j4you-brand.css e carregue-o depois dos
+ * estilos existentes em public/app.html.
+ */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Lilita+One&display=swap');
+
+:root {
+  --j4-green: #113b27;
+  --j4-pink: #ff65c7;
+  --j4-lilac: #c999e3;
+  --j4-orange: #ff4e16;
+  --j4-blue: #a5cff9;
+  --j4-yellow: #f6d98b;
+  --j4-wine: #750035;
+  --j4-cream: #fdfbf7;
+  --accent: var(--j4-pink) !important;
+  --accent-text: var(--j4-wine) !important;
+  --accent-contrast: var(--j4-green) !important;
+  --bg: var(--j4-cream) !important;
+  --surface: #fffdf8 !important;
+  --text: var(--j4-green) !important;
+  --text-muted: #53685d !important;
+  --border: rgba(117, 0, 53, .22) !important;
+  --radius: 16px !important;
+}
+
+html, body {
+  background: var(--j4-cream) !important;
+  color: var(--j4-green) !important;
+  font-family: 'DM Sans', 'Quicksand', sans-serif !important;
+}
+body {
+  background-image:
+    radial-gradient(circle at 2% 25%, rgba(255,101,199,.12) 0 2px, transparent 3px),
+    radial-gradient(circle at 98% 68%, rgba(201,153,227,.16) 0 3px, transparent 4px) !important;
+}
+h1, h2, h3, h4, .hero-welcome h1, .cute-card h2, .cute-card h3 {
+  font-family: 'Lilita One', 'DM Sans', sans-serif !important;
+  letter-spacing: .01em;
+}
+h1, h2, h3 { color: var(--j4-wine); }
+
+/* Barra superior */
+.j4y-navbar {
+  background: var(--j4-green) !important;
+  border-bottom: 3px solid var(--j4-pink) !important;
+  box-shadow: 0 5px 0 rgba(17,59,39,.08) !important;
+}
+.j4y-header-inner {
+  max-width: 1540px !important;
+  min-height: 82px;
+}
+.brand-logo, .brand-logo span, .j4y-navbar a {
+  color: var(--j4-cream) !important;
+}
+.brand-logo {
+  font-family: 'Lilita One', sans-serif !important;
+  font-size: clamp(1.5rem, 2.2vw, 2.5rem) !important;
+  letter-spacing: -.03em !important;
+}
+.brand-sparkle {
+  color: var(--j4-green) !important;
+  background: var(--j4-pink) !important;
+  border-radius: 50% 42% 50% 42% !important;
+  box-shadow: 3px 3px 0 var(--j4-wine) !important;
+}
+.nav-tabs-pill {
+  background: transparent !important;
+  border: 1px solid rgba(253,251,247,.28) !important;
+  border-radius: 999px !important;
+}
+.nav-pill-btn {
+  color: var(--j4-cream) !important;
+  border-radius: 999px !important;
+}
+.nav-pill-btn:hover, .nav-pill-btn.active,
+.nav-pill-btn[data-tab="backup"].active {
+  background: var(--j4-pink) !important;
+  color: var(--j4-green) !important;
+  box-shadow: 3px 3px 0 var(--j4-wine) !important;
+}
+
+/* Conteúdo e cartões */
+.cute-card, .panel, .card, .calc-hero-card {
+  border: 1.5px solid var(--j4-wine) !important;
+  border-radius: 18px !important;
+  box-shadow: 4px 4px 0 rgba(117,0,53,.08) !important;
+}
+.cute-card, .panel, .card {
+  background: #fffdf8 !important;
+}
+.cute-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 rgba(117,0,53,.12) !important;
+}
+.hero-welcome {
+  background: var(--j4-yellow) !important;
+  border: 1.5px solid var(--j4-wine) !important;
+  border-radius: 18px !important;
+  box-shadow: 4px 4px 0 rgba(117,0,53,.1) !important;
+}
+.hero-welcome::after {
+  content: "✿" !important;
+  color: var(--j4-pink) !important;
+  font-size: 6rem !important;
+  opacity: .9 !important;
+  text-shadow: 3px 3px 0 var(--j4-lilac);
+}
+.hero-welcome h1, .hero-welcome h2 {
+  color: var(--j4-wine) !important;
+}
+.hero-welcome p { color: var(--j4-green) !important; }
+.calc-hero-card {
+  background: var(--j4-blue) !important;
+  border-style: solid !important;
+  border-color: var(--j4-wine) !important;
+}
+.big-price-input {
+  color: var(--j4-wine) !important;
+  border: 2px solid var(--j4-wine) !important;
+  border-radius: 12px !important;
+  box-shadow: 3px 3px 0 rgba(117,0,53,.12) !important;
+}
+
+/* Botões — cores vivas e contraste */
+.btn-cute, .btn-rosa, .btn:not([data-variant="outline"]):not([data-variant="ghost"]) {
+  background: var(--j4-pink) !important;
+  color: var(--j4-green) !important;
+  border: 1.5px solid var(--j4-wine) !important;
+  border-radius: 999px !important;
+  box-shadow: 3px 3px 0 var(--j4-wine) !important;
+  font-weight: 700 !important;
+}
+.btn-cute:hover, .btn-rosa:hover, .btn:hover {
+  transform: translate(-1px,-1px);
+  box-shadow: 4px 4px 0 var(--j4-wine) !important;
+}
+.btn-danger-vibrant {
+  background: var(--j4-orange) !important;
+  color: #fff !important;
+  border: 1.5px solid var(--j4-wine) !important;
+  box-shadow: 3px 3px 0 var(--j4-wine) !important;
+}
+.btn-lilas-outline, .btn-cute-outline, .btn[data-variant="outline"] {
+  background: var(--j4-cream) !important;
+  color: var(--j4-wine) !important;
+  border: 1.5px solid var(--j4-wine) !important;
+  border-radius: 999px !important;
+}
+.badge-pill, .badge, .shell-badge {
+  border: 1px solid var(--j4-green) !important;
+  background: #dff2a3 !important;
+  color: var(--j4-green) !important;
+  border-radius: 999px !important;
+}
+
+/* Campos, tabelas, gráficos */
+input, select, textarea, .input {
+  border-color: rgba(117,0,53,.35) !important;
+  border-radius: 10px !important;
+  background-color: #fffdf8 !important;
+  color: var(--j4-green) !important;
+}
+table, .shell-table { color: var(--j4-green) !important; }
+table th, .shell-table th {
+  color: var(--j4-wine) !important;
+  font-weight: 700 !important;
+}
+table td, table th, .shell-table td, .shell-table th {
+  border-bottom-color: rgba(117,0,53,.18) !important;
+}
+table tbody tr:hover, .shell-table tbody tr:hover {
+  background: rgba(255,101,199,.10) !important;
+}
+.kpi .kpi-value { color: var(--j4-wine) !important; }
+.text-success, .kpi .kpi-delta.up { color: var(--j4-green) !important; }
+a { text-underline-offset: 3px; }
+:focus-visible { outline-color: var(--j4-pink) !important; }
+
+/* Responsivo */
+@media (max-width: 760px) {
+  .j4y-header-inner { align-items: flex-start; padding: .8rem 1rem !important; }
+  .nav-tabs-pill { width: 100%; max-width: 100%; }
+  .nav-pill-btn { padding: .55rem .75rem !important; font-size: .82rem !important; }
+  .hero-welcome { padding: 1.25rem !important; }
+  .hero-welcome::after { right: .4rem; font-size: 3.5rem !important; }
+  .cute-card, .panel { padding: 1rem !important; }
+}
