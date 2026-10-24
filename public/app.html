@@ -1,0 +1,3826 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>J4Y — Painel Fofinho de Precificação</title>
+  
+  <!-- Google Fonts: Quicksand -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap">
+  
+  <!-- Basecoat CSS CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.0.2/dist/basecoat.cdn.min.css">
+  
+  <!-- Shell CSS & JS -->
+  <style>
+/* Skip artifact shell — fixed styles served beside every artifact.
+   Tokens, utilities and components (basecoat 1.0 markup, no CDN); artifacts
+   override --accent for their own identity. */
+:root {
+  color-scheme: light dark;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --accent-text: color-mix(in srgb, var(--accent) 72%, #000);
+  --bg: #f8f9fb;
+  --surface: #ffffff;
+  --text: #14171f;
+  --text-muted: #5b6472;
+  --border: rgba(20, 23, 31, 0.10);
+  --radius: 10px;
+  --shadow: 0 1px 3px rgba(20, 23, 31, 0.08);
+  --space: 16px;
+  --success: #0a7a35;
+  --danger: #c0262d;
+  --warning: #8a5300;
+}
+/* Theme resolution. Without data-theme the viewer's system preference decides,
+   as it always did. With it, the artifact's own choice wins in BOTH directions:
+   a page that hardcodes one palette must not be handed the opposite set of
+   tokens by the machine it happens to be opened on. The dark values appear
+   twice because a media query cannot be folded into a selector list.
+   The attribute sits inside :where() so these blocks keep the specificity of a
+   bare :root — the page's own <style> is linked after this file and must go on
+   overriding any token it wants, exactly as it could before. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+    --bg: #101318;
+    --surface: #181c23;
+    --text: #eef1f6;
+    --text-muted: #9aa4b2;
+    --border: rgba(238, 241, 246, 0.12);
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    --success: #4ade80;
+    --danger: #f87171;
+    --warning: #fbbf24;
+  }
+}
+:root:where([data-theme="dark"]) {
+  color-scheme: dark;
+  --accent-text: color-mix(in srgb, var(--accent) 78%, #fff);
+  --bg: #101318;
+  --surface: #181c23;
+  --text: #eef1f6;
+  --text-muted: #9aa4b2;
+  --border: rgba(238, 241, 246, 0.12);
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --success: #4ade80;
+  --danger: #f87171;
+  --warning: #fbbf24;
+}
+:root:where([data-theme="light"]) { color-scheme: light; }
+/* Pages generated before the shell had its own components still link the
+   basecoat CDN, which reads its own tokens and switches theme only on a
+   .dark class. Bridged to the shell's, whatever of it those pages use takes
+   the page's accent and follows the declared theme. Its --accent token is a
+   hover tint, renamed in its theme as --color-accent; the shell's --accent is
+   the brand colour, so the tint is derived from it here. */
+:root {
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--surface);
+  --card-foreground: var(--text);
+  --popover: var(--surface);
+  --popover-foreground: var(--text);
+  --primary: var(--accent);
+  --primary-foreground: var(--accent-contrast);
+  --secondary: color-mix(in srgb, var(--text) 7%, var(--surface));
+  --secondary-foreground: var(--text);
+  --muted: color-mix(in srgb, var(--text) 5%, var(--surface));
+  --muted-foreground: var(--text-muted);
+  --color-accent: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  --color-accent-foreground: var(--text);
+  --destructive: var(--danger);
+  --input: var(--border);
+  --ring: var(--accent);
+}
+* { box-sizing: border-box; }
+/* The reset the pages were written against: they all linked basecoat, which
+   ships Tailwind's. Its components now live here, so the reset does too. */
+*, ::before, ::after, ::backdrop { margin: 0; padding: 0; border: 0 solid; }
+h1, h2, h3, h4, h5, h6 { font-size: inherit; font-weight: inherit; }
+a { color: inherit; text-decoration: inherit; }
+b, strong { font-weight: bolder; }
+ol, ul, menu { list-style: none; }
+svg, video, canvas, iframe { display: block; vertical-align: middle; }
+button, input, select, textarea { color: inherit; background-color: transparent; border-radius: 0; }
+table { border-collapse: collapse; }
+hr { height: 0; color: inherit; border-top-width: 1px; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+img { max-width: 100%; display: block; }
+
+.shell-container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+.shell-section { padding: calc(var(--space) * 2) 0; }
+.shell-grid { display: grid; gap: var(--space); grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.shell-toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: var(--space); }
+.shell-footer { padding: 24px 0 40px; color: var(--text-muted); font-size: 13px; }
+
+.shell-hero { padding: calc(var(--space) * 3) 0 calc(var(--space) * 2); }
+.shell-hero h1 { font-size: clamp(26px, 4vw, 40px); line-height: 1.15; margin: 0 0 10px; text-wrap: balance; }
+.shell-hero p { color: var(--text-muted); max-width: 60ch; margin: 0; }
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--space);
+}
+
+.kpi { display: flex; flex-direction: column; gap: 4px; }
+.kpi .kpi-value { font-size: 28px; font-weight: 650; line-height: 1.1; }
+.kpi .kpi-label { font-size: 13px; color: var(--text-muted); }
+.kpi .kpi-delta { font-size: 12.5px; font-weight: 600; }
+.kpi .kpi-delta.up { color: var(--success); }
+.kpi .kpi-delta.down { color: var(--danger); }
+
+table.shell-table { border-collapse: collapse; width: 100%; font-size: 14px; }
+table.shell-table th {
+  text-align: left; font-size: 11.5px; letter-spacing: 0.05em; text-transform: uppercase;
+  color: var(--text-muted); font-weight: 600;
+}
+table.shell-table th, table.shell-table td { padding: 9px 12px 9px 0; border-bottom: 1px solid var(--border); }
+table.shell-table td.num, table.shell-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+table.shell-table tbody tr:hover { background: color-mix(in srgb, var(--accent) 6%, transparent); }
+
+.chart-box { width: 100%; min-height: 220px; }
+.chart-box svg { width: 100%; height: auto; display: block; }
+
+.muted { color: var(--text-muted); }
+.accent { color: var(--accent-text); }
+.shell-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent); color: var(--accent-text);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .shell-fade { animation: shell-fade 400ms ease both; }
+  @keyframes shell-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+}
+
+/* Layout and type utilities: what the pages kept spelling in style="".
+   Spacing and type sizes follow Tailwind's scale; there is no Tailwind. */
+.row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.stack { display: flex; flex-direction: column; gap: var(--space); }
+.between { justify-content: space-between; }
+.grow { flex: 1 1 0; min-width: 0; }
+.cols-2, .cols-3, .cols-4 { display: grid; gap: var(--space); grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 720px) {
+  .cols-2, .cols-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (min-width: 1000px) { .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.gap-1 { gap: 4px; } .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; } .gap-6 { gap: 24px; }
+.m-0 { margin: 0; }
+.mt-1 { margin-top: 4px; } .mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; } .mt-6 { margin-top: 24px; }
+.mb-1 { margin-bottom: 4px; } .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; } .mb-6 { margin-bottom: 24px; }
+.p-2 { padding: 8px; } .p-3 { padding: 12px; } .p-4 { padding: 16px; } .p-6 { padding: 24px; }
+.text-xs { font-size: 12px; } .text-sm { font-size: 14px; } .text-base { font-size: 16px; }
+.text-lg { font-size: 18px; } .text-xl { font-size: 20px; line-height: 1.35; }
+.text-2xl { font-size: 24px; line-height: 1.25; } .text-3xl { font-size: 30px; line-height: 1.2; }
+.font-medium { font-weight: 500; } .font-semibold { font-weight: 600; } .font-bold { font-weight: 700; }
+.text-right { text-align: right; } .text-center { text-align: center; }
+.nowrap { white-space: nowrap; }
+.truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+.w-full { width: 100%; }
+.text-success { color: var(--success); } .text-danger { color: var(--danger); } .text-warning { color: var(--warning); }
+
+/* Components, with basecoat 1.0 markup (variants and sizes are data
+   attributes) and the shell tokens, so a page needs neither component CSS
+   nor a CSS framework. An older page that also links basecoat gets these
+   rules after it, over the same properties. */
+button, input, select, textarea { font: inherit; }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 36px; padding: 0 14px; border: 1px solid transparent; border-radius: calc(var(--radius) - 2px);
+  background: var(--accent); color: var(--accent-contrast);
+  font-size: 14px; font-weight: 500; line-height: 1; white-space: nowrap; text-decoration: none; cursor: pointer;
+  transition: background-color 150ms ease, border-color 150ms ease, color 150ms ease;
+}
+.btn:hover { background: color-mix(in srgb, var(--accent) 86%, #000); }
+.btn:disabled, .btn[aria-disabled="true"] { opacity: 0.5; pointer-events: none; }
+.btn[data-variant="secondary"] { background: color-mix(in srgb, var(--text) 8%, var(--surface)); color: var(--text); }
+.btn[data-variant="secondary"]:hover { background: color-mix(in srgb, var(--text) 14%, var(--surface)); }
+.btn[data-variant="outline"] { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn[data-variant="ghost"] { background: transparent; color: var(--text); }
+.btn[data-variant="outline"]:hover, .btn[data-variant="ghost"]:hover { background: color-mix(in srgb, var(--accent) 10%, var(--surface)); }
+.btn[data-variant="destructive"] { background: var(--danger); color: var(--bg); }
+.btn[data-variant="destructive"]:hover { background: color-mix(in srgb, var(--danger) 86%, var(--text)); }
+.btn[data-variant="link"] { height: auto; padding: 0; background: none; color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; }
+.btn[data-size="sm"] { height: 30px; padding: 0 10px; font-size: 13px; }
+.btn[data-size="lg"] { height: 42px; padding: 0 20px; font-size: 15px; }
+.btn[data-size="icon"] { width: 36px; padding: 0; }
+
+.badge {
+  display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px;
+  border: 1px solid transparent; border-radius: 999px; background: var(--accent); color: var(--accent-contrast);
+  font-size: 12px; font-weight: 600; line-height: 1.5; white-space: nowrap;
+}
+.badge[data-variant="secondary"] { background: color-mix(in srgb, var(--text) 8%, var(--surface)); color: var(--text); }
+.badge[data-variant="outline"] { background: transparent; color: var(--text); border-color: var(--border); }
+.badge[data-variant="destructive"] { background: color-mix(in srgb, var(--danger) 14%, var(--surface)); color: var(--danger); }
+
+.alert {
+  display: grid; gap: 4px; padding: 12px 16px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text); font-size: 14px;
+}
+.alert h2, .alert h3 { margin: 0; font-size: 14px; font-weight: 600; }
+.alert p, .alert section { margin: 0; color: var(--text-muted); }
+.alert[data-variant="destructive"] { border-color: color-mix(in srgb, var(--danger) 45%, var(--border)); background: color-mix(in srgb, var(--danger) 7%, var(--surface)); color: var(--danger); }
+
+.card {
+  display: flex; flex-direction: column; gap: 16px; padding: 20px 0;
+  border: 1px solid var(--border); border-radius: calc(var(--radius) + 2px);
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow);
+}
+.card > header, .card > section, .card > footer { padding: 0 20px; }
+.card > header { display: grid; gap: 4px; }
+.card > header h2, .card > header h3 { margin: 0; font-size: 16px; font-weight: 600; line-height: 1.3; }
+.card > header p { margin: 0; color: var(--text-muted); font-size: 14px; }
+.card > footer { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.input {
+  width: 100%; min-height: 36px; padding: 6px 12px; border: 1px solid var(--border); border-radius: calc(var(--radius) - 2px);
+  background: var(--surface); color: var(--text); font-size: 14px;
+}
+textarea.input { min-height: 84px; resize: vertical; }
+.input::placeholder { color: var(--text-muted); }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent); }
+.field { display: grid; gap: 6px; }
+.field label { font-size: 14px; font-weight: 500; }
+.field [role="alert"] { color: var(--danger); font-size: 13px; }
+
+dialog.dialog {
+  width: min(520px, calc(100vw - 32px)); max-height: calc(100vh - 32px); margin: auto; padding: 0;
+  border: 1px solid var(--border); border-radius: calc(var(--radius) + 4px);
+  background: var(--surface); color: var(--text); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+}
+dialog.dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+dialog.dialog > div { display: grid; gap: 16px; padding: 24px; }
+dialog.dialog header { display: grid; gap: 4px; }
+dialog.dialog header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+dialog.dialog header p { margin: 0; color: var(--text-muted); font-size: 14px; }
+dialog.dialog footer { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+.tabs { display: grid; gap: 12px; }
+.tabs > [role="tablist"] {
+  display: inline-flex; gap: 4px; width: fit-content; max-width: 100%; padding: 4px; overflow-x: auto;
+  border-radius: var(--radius); background: color-mix(in srgb, var(--text) 6%, var(--surface));
+}
+.tabs [role="tab"] {
+  padding: 6px 12px; border: 0; border-radius: calc(var(--radius) - 4px); background: transparent;
+  color: var(--text-muted); font-size: 14px; font-weight: 500; white-space: nowrap; cursor: pointer;
+}
+.tabs [role="tab"][aria-selected="true"] { background: var(--surface); color: var(--text); box-shadow: var(--shadow); }
+.tabs [role="tabpanel"][hidden] { display: none; }
+
+.accordion > details { border-bottom: 1px solid var(--border); }
+.accordion > details > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 14px 0; font-weight: 500; list-style: none; cursor: pointer;
+}
+.accordion > details > summary::-webkit-details-marker { display: none; }
+.accordion > details > summary::after { content: "+"; color: var(--text-muted); font-size: 18px; line-height: 1; }
+.accordion > details[open] > summary::after { content: "\2212"; }
+.accordion > details > :not(summary) { margin: 0 0 14px; color: var(--text-muted); }
+
+.toaster {
+  position: fixed; right: 16px; bottom: 16px; z-index: 50; display: flex; flex-direction: column-reverse; gap: 8px;
+  width: min(360px, calc(100vw - 32px)); pointer-events: none;
+}
+.toaster .toast { pointer-events: auto; transition: opacity 200ms ease, transform 200ms ease; }
+.toaster .toast[aria-hidden="true"] { opacity: 0; transform: translateY(8px); }
+.toaster .toast-content {
+  padding: 12px 14px; border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface); color: var(--text); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); font-size: 13px;
+}
+.toaster .toast-content h2 { margin: 0 0 2px; font-size: 14px; font-weight: 600; }
+.toaster .toast-content p { margin: 0; color: var(--text-muted); }
+
+/* skipUI building blocks. */
+.skip-table-search { max-width: 320px; margin-bottom: 12px; }
+.skip-table-wrap { overflow-x: auto; }
+table.shell-table th[data-sort] { cursor: pointer; user-select: none; }
+table.shell-table th[aria-sort="ascending"]::after { content: " \25B2"; font-size: 9px; }
+table.shell-table th[aria-sort="descending"]::after { content: " \25BC"; font-size: 9px; }
+table.shell-table td.skip-table-empty { color: var(--text-muted); text-align: center; padding: 24px 0; }
+.skip-pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 12px; font-size: 13px; color: var(--text-muted); }
+.toaster .toast[data-type="success"] .toast-content { border-left: 3px solid var(--success); }
+.toaster .toast[data-type="error"] .toast-content { border-left: 3px solid var(--danger); }
+
+</style>
+  
+
+  <style>
+    :root {
+      --accent: #E88BA9;
+      --accent-text: #963556;
+      --accent-contrast: #FFFFFF;
+      --bg: #FFF5F8;
+      --surface: #FFFFFF;
+      --text: #443257;
+      --text-muted: #7A668D;
+      --border: #F3DBE5;
+      --radius: 20px;
+      --font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background: linear-gradient(135deg, #FFF5F7 0%, #F8F1FD 50%, #FFF9F3 100%);
+      min-height: 100vh;
+      color: var(--text);
+      margin: 0;
+      padding-bottom: 3rem;
+    }
+
+    /* Soft cute header */
+    .j4y-navbar {
+      background: rgba(255, 255, 255, 0.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 2px solid #F8E0EC;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      box-shadow: 0 4px 20px rgba(232, 139, 169, 0.08);
+    }
+    .j4y-header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0.85rem 1.25rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 700;
+      font-size: 1.5rem;
+      color: #923456;
+      text-decoration: none;
+      letter-spacing: -0.5px;
+    }
+    .brand-sparkle {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #F8BBD0, #D8C7F0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 10px rgba(216, 199, 240, 0.45);
+      font-size: 1.2rem;
+    }
+    .nav-tabs-pill {
+      display: flex;
+      gap: 0.35rem;
+      background: #FDF2F7;
+      padding: 0.3rem;
+      border-radius: 999px;
+      border: 1px solid #F5D5E4;
+      overflow-x: auto;
+    }
+    .nav-pill-btn {
+      border: none;
+      background: transparent;
+      padding: 0.5rem 1.1rem;
+      border-radius: 999px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #7A668D;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
+    .nav-pill-btn:hover {
+      color: #923456;
+      background: rgba(248, 187, 208, 0.3);
+    }
+    .nav-pill-btn.active {
+      background: linear-gradient(135deg, #F8BBD0 0%, #D8C7F0 100%);
+      color: #4A1D39;
+      box-shadow: 0 3px 10px rgba(248, 187, 208, 0.45);
+    }
+    .nav-pill-btn[data-tab="backup"].active {
+      background: #ff65c7;
+      color: #FFFFFF;
+      box-shadow: 0 4px 14px rgba(255, 101, 199, 0.45);
+    }
+
+    /* Brand Backup Buttons & Badges */
+    .btn-rosa {
+      background: #ff65c7;
+      color: #FFFFFF;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      padding: 0.75rem 1.6rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: inherit;
+      font-size: 0.98rem;
+      box-shadow: 0 4px 14px rgba(255, 101, 199, 0.38);
+      transition: all 0.2s ease;
+    }
+    .btn-rosa:hover:not(:disabled) {
+      background: #e652b4;
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 18px rgba(255, 101, 199, 0.5);
+    }
+    .btn-rosa:disabled, .btn-danger-vibrant:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+    .btn-danger-vibrant {
+      background: #ff4e16;
+      color: #FFFFFF;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      padding: 0.7rem 1.5rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 14px rgba(255, 78, 22, 0.3);
+      transition: all 0.2s ease;
+    }
+    .btn-danger-vibrant:hover:not(:disabled) {
+      background: #e0410f;
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 18px rgba(255, 78, 22, 0.45);
+    }
+    .btn-lilas-outline {
+      background: #FFFFFF;
+      color: #750035;
+      font-weight: 600;
+      border: 2px solid #c999e3;
+      border-radius: 999px;
+      padding: 0.65rem 1.3rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-size: 0.92rem;
+      transition: all 0.2s ease;
+    }
+    .btn-lilas-outline:hover {
+      background: #fdfbf7;
+      border-color: #a872c7;
+    }
+    .card-danger-zone {
+      border: 2px solid #ff4e16;
+      background: #fffcfb;
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 6px 20px rgba(255, 78, 22, 0.08);
+    }
+    .backup-alert-success {
+      background: #e8f5ed;
+      color: #113b27;
+      border: 1.5px solid #a3d9b8;
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+    .backup-alert-error {
+      background: #fbebee;
+      color: #750035;
+      border: 1.5px solid #f2b6cb;
+      border-radius: 14px;
+      padding: 0.85rem 1.1rem;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    /* Cards & Containers */
+    .cute-card {
+      background: #FFFFFF;
+      border-radius: 20px;
+      border: 1px solid #F8E2ED;
+      box-shadow: 0 8px 24px rgba(240, 195, 215, 0.18);
+      padding: 1.5rem;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .cute-card:hover {
+      box-shadow: 0 12px 28px rgba(240, 195, 215, 0.28);
+    }
+
+    /* Welcome Hero */
+    .hero-welcome {
+      background: linear-gradient(135deg, #FFE8F0 0%, #EFE8FA 50%, #FFF2E6 100%);
+      border: 1px solid #F5D5E4;
+      border-radius: 24px;
+      padding: 1.75rem 2rem;
+      margin-bottom: 1.75rem;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(248, 187, 208, 0.2);
+    }
+    .hero-welcome::after {
+      content: "🌸";
+      position: absolute;
+      right: 1.5rem;
+      bottom: -0.5rem;
+      font-size: 5rem;
+      opacity: 0.22;
+      pointer-events: none;
+    }
+
+    /* Big Calculator Input */
+    .calc-hero-card {
+      background: linear-gradient(135deg, #FFF0F5 0%, #F5ECFD 100%);
+      border: 2px dashed #E8AEC8;
+      border-radius: 22px;
+      padding: 1.75rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+    .big-price-input {
+      font-size: 2.25rem;
+      font-weight: 700;
+      color: #923456;
+      background: #FFFFFF;
+      border: 2px solid #F5B6CE;
+      border-radius: 18px;
+      padding: 0.6rem 1.25rem;
+      width: 100%;
+      max-width: 320px;
+      text-align: center;
+      box-shadow: 0 6px 16px rgba(232, 139, 169, 0.18);
+      outline: none;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+    .big-price-input:focus {
+      border-color: #923456;
+      box-shadow: 0 0 0 4px rgba(232, 139, 169, 0.25);
+    }
+
+    /* Buttons */
+    .btn-cute {
+      background: linear-gradient(135deg, #F8BBD0 0%, #D8C7F0 100%);
+      color: #4A1D39;
+      font-weight: 700;
+      border: none;
+      border-radius: 999px;
+      padding: 0.65rem 1.4rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 14px rgba(216, 199, 240, 0.45);
+      transition: all 0.2s ease;
+    }
+    .btn-cute:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 18px rgba(248, 187, 208, 0.55);
+    }
+    .btn-cute-outline {
+      background: #FFFFFF;
+      color: #923456;
+      font-weight: 600;
+      border: 1.5px solid #F5B6CE;
+      border-radius: 999px;
+      padding: 0.55rem 1.2rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-family: inherit;
+      font-size: 0.9rem;
+      transition: all 0.2s ease;
+    }
+    .btn-cute-outline:hover {
+      background: #FFF0F5;
+      border-color: #923456;
+    }
+
+    /* Badges */
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      gap: 0.25rem;
+    }
+    .badge-tiktok { background: #EAE6EF; color: #32253B; border: 1px solid #D5CEE0; }
+    .badge-ml { background: #FFF4D6; color: #735100; border: 1px solid #FFE499; }
+    .badge-shopee { background: #FFE8DF; color: #8F3316; border: 1px solid #FFCEBE; }
+    .badge-kwai { background: #F3E8FF; color: #581C87; border: 1px solid #D8B4FE; }
+    .badge-profit { background: #E6F8EE; color: #166A3D; border: 1px solid #B7EBCE; }
+
+    /* Product Grid */
+    .product-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.25rem;
+    }
+    .product-card-thumb {
+      width: 100%;
+      height: 150px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #FDE2E4 0%, #E2ECE9 50%, #DFE7FD 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 0.85rem;
+    }
+    .product-card-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.3s ease;
+    }
+    .cute-card:hover .product-card-thumb img {
+      transform: scale(1.05);
+    }
+
+    /* Modal Backdrop */
+    .modal-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(68, 50, 87, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+    .modal-backdrop.open {
+      display: flex;
+    }
+    .modal-box {
+      background: #FFFFFF;
+      border-radius: 24px;
+      border: 2px solid #F5D5E4;
+      padding: 1.75rem;
+      max-width: 760px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 16px 40px rgba(146, 52, 86, 0.2);
+      animation: popIn 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    /* Dynamic Materials Table */
+    .mat-table-wrapper {
+      background: #FFF9FB;
+      border: 1.5px solid #F8DCE7;
+      border-radius: 16px;
+      padding: 0.75rem;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+    }
+    .mat-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+    }
+    .mat-table th {
+      text-align: left;
+      padding: 0.5rem;
+      color: #7A668D;
+      font-weight: 700;
+      border-bottom: 1.5px solid #F5CADB;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .mat-table td {
+      padding: 0.45rem 0.4rem;
+      vertical-align: middle;
+      border-bottom: 1px solid #FAEDF2;
+    }
+    .mat-table tbody tr:nth-child(even) {
+      background-color: rgba(249, 197, 213, 0.18);
+    }
+    .mat-table tbody tr:hover {
+      background-color: rgba(249, 197, 213, 0.3);
+    }
+    .mat-subtotal {
+      font-weight: 700;
+      color: #923456;
+      background: #FFF0F5;
+      padding: 0.35rem 0.6rem;
+      border-radius: 8px;
+      display: inline-block;
+      min-width: 72px;
+      text-align: right;
+    }
+    .img-upload-drop {
+      border: 2px dashed #E8AEC8;
+      background: #FFF9FB;
+      border-radius: 16px;
+      padding: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .img-upload-drop:hover {
+      background: #FFF0F6;
+      border-color: #923456;
+    }
+    .img-preview-box {
+      width: 68px;
+      height: 68px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #FDE2E4, #E2ECE9);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      border: 1px solid #F0D5E2;
+    }
+    .img-preview-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .calc-test-box {
+      background: #FFFFFF;
+      border: 1.5px dashed #D8C7F0;
+      border-radius: 16px;
+      margin-top: 1.25rem;
+      overflow: hidden;
+    }
+    .calc-test-summary {
+      cursor: pointer;
+      padding: 0.85rem 1.25rem;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #5B4B7A;
+      background: #FDF8FF;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      user-select: none;
+    }
+    .calc-test-summary:hover {
+      background: #F6EDFD;
+    }
+    .calc-test-content {
+      padding: 1rem 1.25rem;
+      background: #FFFFFF;
+      border-top: 1px solid #F0E4F9;
+      font-size: 0.82rem;
+      line-height: 1.6;
+      color: #443257;
+    }
+    .negative-profit {
+      color: #C02626 !important;
+      background-color: #FEE2E2 !important;
+      border-color: #FECACA !important;
+    }
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.92); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    /* Input styles */
+    .cute-input {
+      width: 100%;
+      padding: 0.65rem 0.9rem;
+      border: 1.5px solid #F0D5E2;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #443257;
+      background: #FFFDFE;
+      outline: none;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      box-sizing: border-box;
+    }
+    .cute-input:focus {
+      border-color: #923456;
+      box-shadow: 0 0 0 3px rgba(232, 139, 169, 0.2);
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .j4y-header-inner {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .nav-tabs-pill {
+        justify-content: flex-start;
+      }
+      .calc-hero-card {
+        padding: 1.2rem;
+      }
+      .big-price-input {
+        font-size: 1.8rem;
+      }
+    }
+
+    /* Platform Tabs inner */
+    .tab-section {
+      display: none;
+    }
+    .tab-section.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Sticky Navigation -->
+  <header class="j4y-navbar">
+    <div class="j4y-header-inner">
+      <a href="#" class="brand-logo" onclick="switchTab('dashboard'); return false;">
+        <div class="brand-sparkle">💖</div>
+        <div>
+          <span>J4Y</span>
+          <span style="font-size: 0.72rem; font-weight: 500; display: block; color: var(--text-muted); margin-top: -3px;">precificação & marketplaces ✨</span>
+        </div>
+      </a>
+
+      <!-- Pill Tabs -->
+      <nav class="nav-tabs-pill" aria-label="Navegação principal">
+        <button class="nav-pill-btn active" data-tab="dashboard" onclick="switchTab('dashboard')">
+          <span>📊</span> Visão Geral
+        </button>
+        <button class="nav-pill-btn" data-tab="precificacao" onclick="switchTab('precificacao')">
+          <span>🧮</span> Precificação
+        </button>
+        <button class="nav-pill-btn" data-tab="plataformas" onclick="switchTab('plataformas')">
+          <span>🛍️</span> Marketplaces
+        </button>
+        <button class="nav-pill-btn" data-tab="produtos" onclick="switchTab('produtos')">
+          <span>🎀</span> Produtos
+        </button>
+        <button class="nav-pill-btn" data-tab="promocoes" onclick="switchTab('promocoes')">
+          <span>🏷️</span> Promoções
+        </button>
+        <button class="nav-pill-btn" data-tab="backup" onclick="switchTab('backup')">
+          <span>💾</span> Backup
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="shell-container" style="margin-top: 1.75rem; padding: 0 1.25rem;">
+
+    <!-- ========================================== -->
+    <!-- 1. DASHBOARD                               -->
+    <!-- ========================================== -->
+    <section id="tab-dashboard" class="tab-section active">
+      <!-- Welcome Card -->
+      <div class="hero-welcome">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+          <div>
+            <h1 style="margin: 0 0 0.4rem 0; font-size: 1.85rem; color: #923456; font-weight: 700;">
+              Olá, fofa! 💖 Seja bem-vinda ao J4Y!
+            </h1>
+            <p style="margin: 0; color: #5B4B7A; font-size: 1rem; max-width: 650px; line-height: 1.5;">
+              Tudo pronto para deixar suas vendas no TikTok Shop, Shopee e Mercado Livre sempre lucrativas e organizadas? Dá uma olhada no seu resumo:
+            </p>
+          </div>
+          <button class="btn-cute" onclick="openProductModal()">
+            <span>✨</span> Novo Produto
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI Grid -->
+      <div class="shell-grid" style="grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem; margin-bottom: 1.75rem;">
+        <div class="cute-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Total de Itens</span>
+            <span style="font-size: 1.3rem;">📦</span>
+          </div>
+          <div id="kpi-total-items" style="font-size: 1.9rem; font-weight: 700; color: #923456; margin-top: 0.3rem;">6</div>
+          <span class="badge-pill badge-profit" style="margin-top: 0.4rem;">Cadastrados ativos</span>
+        </div>
+
+        <div class="cute-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Custo Médio</span>
+            <span style="font-size: 1.3rem;">🌸</span>
+          </div>
+          <div id="kpi-custo-medio" style="font-size: 1.9rem; font-weight: 700; color: #5B4B7A; margin-top: 0.3rem;">R$ 0,00</div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Por produto em estoque</span>
+        </div>
+
+        <div class="cute-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Preço Médio de Venda</span>
+            <span style="font-size: 1.3rem;">✨</span>
+          </div>
+          <div id="kpi-preco-medio" style="font-size: 1.9rem; font-weight: 700; color: #923456; margin-top: 0.3rem;">R$ 0,00</div>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Média recomendada</span>
+        </div>
+
+        <div class="cute-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">Lucro Bruto Médio</span>
+            <span style="font-size: 1.3rem;">🦋</span>
+          </div>
+          <div id="kpi-lucro-medio" style="font-size: 1.9rem; font-weight: 700; color: #166A3D; margin-top: 0.3rem;">R$ 0,00</div>
+          <span id="kpi-margem-badge" class="badge-pill badge-profit" style="margin-top: 0.4rem;">Margem: ~56%</span>
+        </div>
+      </div>
+
+      <!-- Overview Charts + Quick Table -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+        <div class="cute-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: #5B4B7A;">
+              Lucro Médio por Canal (R$)
+            </h2>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Estimativa pós-taxa</span>
+          </div>
+          <div id="chart-lucro-plataformas" class="chart-box" style="height: 240px;"></div>
+        </div>
+
+        <div class="cute-card">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+            <h2 style="font-size: 1.15rem; font-weight: 700; margin: 0; color: #5B4B7A;">
+              Destaques Rápidos
+            </h2>
+            <button class="btn-cute-outline" style="padding: 0.3rem 0.8rem; font-size: 0.8rem;" onclick="switchTab('precificacao')">
+              Simular Preços →
+            </button>
+          </div>
+          <div style="overflow-x: auto;">
+            <table class="shell-table" style="width: 100%; font-size: 0.88rem;">
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th class="num">Custo</th>
+                  <th class="num">Preço</th>
+                  <th class="num">Lucro</th>
+                </tr>
+              </thead>
+              <tbody id="quick-overview-rows">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 2. PRECIFICAÇÃO (Calculadora em Tempo Real)-->
+    <!-- ========================================== -->
+    <section id="tab-precificacao" class="tab-section">
+      <div class="calc-hero-card">
+        <span class="badge-pill" style="background: #F8BBD0; color: #923456; margin-bottom: 0.6rem;">SIMULADOR INTELIGENTE ✨</span>
+        <h2 style="color: #923456; font-size: 1.5rem; margin: 0.3rem 0 0.8rem 0; font-weight: 700;">
+          Simulador Rápido de Preço de Venda
+        </h2>
+        <p style="color: #5B4B7A; font-size: 0.95rem; margin-bottom: 1.25rem;">
+          Selecione um produto ou digite os valores abaixo para ver o impacto em todas as plataformas simultaneamente:
+        </p>
+
+        <div style="display: flex; justify-content: center; align-items: center; gap: 1rem; flex-wrap: wrap;">
+          <div style="text-align: left;">
+            <label for="calc-select-prod" style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">
+              Escolher Produto
+            </label>
+            <select id="calc-select-prod" class="cute-input" style="width: 210px;" onchange="loadProductIntoCalc(this.value)">
+              <!-- Options populated by JS -->
+            </select>
+          </div>
+
+          <div style="text-align: left;">
+            <label for="calc-custo" style="display: block; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.25rem;">
+              Custo Total (R$)
+            </label>
+            <input type="number" id="calc-custo" step="0.50" min="0" value="18.50" class="cute-input" style="width: 140px; font-weight: 700;" oninput="recalcLiveSimulator()">
+          </div>
+
+          <div style="text-align: center;">
+            <label for="calc-preco-venda" style="display: block; font-size: 0.85rem; font-weight: 700; color: #923456; margin-bottom: 0.25rem;">
+              PREÇO DE VENDA (R$)
+            </label>
+            <input type="number" id="calc-preco-venda" step="0.50" min="0" value="45.00" class="big-price-input" oninput="recalcLiveSimulator()">
+          </div>
+
+          <div style="text-align: left; background: #FFFFFF; padding: 0.75rem 1.25rem; border-radius: 16px; border: 1.5px solid #F5D5E4;">
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">MARGEM BRUTA</div>
+            <div id="calc-res-margem" style="font-size: 1.6rem; font-weight: 700; color: #166A3D;">58.9%</div>
+            <div id="calc-res-lucro" style="font-size: 0.8rem; color: #5B4B7A; font-weight: 600;">Lucro: R$ 26,50</div>
+          </div>
+        </div>
+
+        <!-- Live Platform Breakdown for current simulator price (4 real marketplaces) -->
+        <div style="margin-top: 1.5rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1rem; text-align: left;">
+          <!-- TikTok Shop -->
+          <div style="background: #FFFFFF; border-radius: 16px; padding: 1rem; border: 1.5px solid #E6D9F5;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-pill badge-tiktok">TikTok Shop 🎵</span>
+              <span id="sim-taxa-tt" style="font-size: 0.75rem; font-weight: 700; color: #5B4B7A;">10% + R$4</span>
+            </div>
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #5B4B7A;" id="sim-detalhe-tt">Comissão + SFP (6%)</div>
+            <div style="font-size: 0.85rem; color: #923456; margin-top: 0.15rem;">Desconto total: <b id="sim-val-taxa-tt">R$ 0,00</b></div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: #166A3D; margin-top: 0.35rem;" id="sim-lucro-tt">R$ 0,00 líq.</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);" id="sim-margem-tt">Margem líq: 0%</div>
+          </div>
+
+          <!-- Mercado Livre -->
+          <div style="background: #FFFFFF; border-radius: 16px; padding: 1rem; border: 1.5px solid #FFE499;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-pill badge-ml">Mercado Livre 💛</span>
+              <span id="sim-taxa-ml" style="font-size: 0.75rem; font-weight: 700; color: #735100;">15% + Frete</span>
+            </div>
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #5B4B7A;" id="sim-detalhe-ml">Comissão + Frete R$12</div>
+            <div style="font-size: 0.85rem; color: #923456; margin-top: 0.15rem;">Desconto total: <b id="sim-val-taxa-ml">R$ 0,00</b></div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: #166A3D; margin-top: 0.35rem;" id="sim-lucro-ml">R$ 0,00 líq.</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);" id="sim-margem-ml">Margem líq: 0%</div>
+          </div>
+
+          <!-- Shopee -->
+          <div style="background: #FFFFFF; border-radius: 16px; padding: 1rem; border: 1.5px solid #FFCEBE;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-pill badge-shopee">Shopee 🧡</span>
+              <span id="sim-taxa-sh" style="font-size: 0.75rem; font-weight: 700; color: #8F3316;">20% + R$4,50</span>
+            </div>
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #5B4B7A;">20% do valor + R$4,50 fixo</div>
+            <div style="font-size: 0.85rem; color: #923456; margin-top: 0.15rem;">Desconto total: <b id="sim-val-taxa-sh">R$ 0,00</b></div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: #166A3D; margin-top: 0.35rem;" id="sim-lucro-sh">R$ 0,00 líq.</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);" id="sim-margem-sh">Margem líq: 0%</div>
+          </div>
+
+          <!-- Kwai Shop -->
+          <div style="background: #FFFFFF; border-radius: 16px; padding: 1rem; border: 1.5px solid #D8B4FE;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span class="badge-pill badge-kwai">Kwai Shop 💜</span>
+              <span id="sim-taxa-kw" style="font-size: 0.75rem; font-weight: 700; color: #581C87;">20% + R$4,00</span>
+            </div>
+            <div style="margin-top: 0.5rem; font-size: 0.8rem; color: #5B4B7A;">20% do valor + R$4,00 fixo</div>
+            <div style="font-size: 0.85rem; color: #923456; margin-top: 0.15rem;">Desconto total: <b id="sim-val-taxa-kw">R$ 0,00</b></div>
+            <div style="font-size: 1.2rem; font-weight: 700; color: #166A3D; margin-top: 0.35rem;" id="sim-lucro-kw">R$ 0,00 líq.</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted);" id="sim-margem-kw">Margem líq: 0%</div>
+          </div>
+        </div>
+
+        <!-- Bloco de Verificação Visível: Teste de Cálculo -->
+        <details class="calc-test-box" id="calc-test-accordion">
+          <summary class="calc-test-summary">
+            <span>🔍 Teste de cálculo (Memória detalhada de custos e taxas)</span>
+            <span style="font-size: 0.75rem; color: #7A668D;">Clique para inspecionar ▼</span>
+          </summary>
+          <div class="calc-test-content" id="calc-test-details">
+            <!-- Populated dynamically by recalcLiveSimulator() -->
+          </div>
+        </details>
+      </div>
+
+      <!-- Tabela Geral de Precificação -->
+      <div class="cute-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+          <div>
+            <h3 style="margin: 0; font-size: 1.25rem; color: #923456;">Tabela Geral de Precificação</h3>
+            <p style="margin: 0; font-size: 0.85rem; color: var(--text-muted);">Edite o preço ou o custo na hora para atualizar o catálogo</p>
+          </div>
+          <button class="btn-cute-outline" onclick="openProductModal()">+ Novo Produto</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="shell-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th style="width: 50px;">Item</th>
+                <th>Nome do Produto</th>
+                <th class="num">Custo Base</th>
+                <th class="num">Preço Sugerido</th>
+                <th class="num">Lucro Bruto</th>
+                <th class="num">Margem %</th>
+                <th style="text-align: center;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="table-precificacao-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 3. PLATAFORMAS (Marketplaces)              -->
+    <!-- ========================================== -->
+    <section id="tab-plataformas" class="tab-section">
+      <div class="cute-card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, #FFFFFF 0%, #FFF8FA 100%);">
+        <h2 style="font-size: 1.35rem; color: #923456; margin: 0 0 0.5rem 0; font-weight: 700;">
+          Configuração de Taxas Reais por Marketplace
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.25rem;">
+          Ajuste as regras de comissão e frete de cada canal. Todos os cálculos de lucro líquido se ajustam imediatamente:
+        </p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.25rem;">
+          <!-- TikTok Shop -->
+          <div style="border: 2px solid #D5CEE0; border-radius: 18px; padding: 1.2rem; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span class="badge-pill badge-tiktok" style="font-size: 0.85rem;">TikTok Shop 🎵</span>
+                <span style="font-size: 0.72rem; color: #5B4B7A; font-weight: 700;">Regra Automática</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.6rem 0; line-height: 1.4;">
+                • &lt; R$50: 10% + R$4,00 fixo<br>
+                • ≥ R$50: 6% + R$6,00 fixo
+              </p>
+            </div>
+            <div style="border-top: 1px dashed #E6D9F5; padding-top: 0.75rem;">
+              <label style="display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; font-weight: 700; color: #5B4B7A; cursor: pointer; margin-bottom: 0.35rem;">
+                <input type="checkbox" id="tax-tt-sfp-active" checked onchange="updateTikTokSettings()">
+                Aderir ao Frete Grátis (SFP)
+              </label>
+              <div style="display: flex; align-items: center; gap: 0.4rem;">
+                <span style="font-size: 0.8rem; color: var(--text-muted);">Taxa SFP (%):</span>
+                <input type="number" id="tax-tt-sfp-pct" class="cute-input" style="width: 75px; padding: 4px 8px; font-weight: 700; text-align: center;" value="6" min="0" max="100" onchange="updateTikTokSettings()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Mercado Livre -->
+          <div style="border: 2px solid #FFE499; border-radius: 18px; padding: 1.2rem; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span class="badge-pill badge-ml" style="font-size: 0.85rem;">Mercado Livre 💛</span>
+                <span style="font-size: 0.72rem; color: #735100; font-weight: 700;">Papelaria</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.6rem 0;">
+                Faixa padrão: 12% a 17% + Frete fixo por produto.
+              </p>
+            </div>
+            <div style="border-top: 1px dashed #FFE499; padding-top: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label for="tax-ml-comissao" style="font-size: 0.8rem; font-weight: 600;">% Comissão:</label>
+                <input type="number" id="tax-ml-comissao" class="cute-input" style="width: 80px; padding: 4px 8px; font-weight: 700; text-align: center;" value="15" min="0" max="100" onchange="updateMLSettings()">
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <label for="tax-ml-frete" style="font-size: 0.8rem; font-weight: 600;">Frete Fixo (R$):</label>
+                <input type="number" id="tax-ml-frete" class="cute-input" style="width: 80px; padding: 4px 8px; font-weight: 700; text-align: center;" value="12.00" min="0" step="0.50" onchange="updateMLSettings()">
+              </div>
+            </div>
+          </div>
+
+          <!-- Shopee -->
+          <div style="border: 2px solid #FFCEBE; border-radius: 18px; padding: 1.2rem; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span class="badge-pill badge-shopee" style="font-size: 0.85rem;">Shopee 🧡</span>
+                <span style="font-size: 0.72rem; color: #8F3316; font-weight: 700;">Comissão Oficial</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.6rem 0;">
+                20% sobre o preço de venda + taxa fixa de R$4,50 por item (até R$79,99).
+              </p>
+            </div>
+            <div style="border-top: 1px dashed #FFCEBE; padding-top: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; font-weight: 600;">Comissão:</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #8F3316;">20%</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; font-weight: 600;">Taxa Fixa:</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #8F3316;">R$ 4,50 / item</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kwai Shop -->
+          <div style="border: 2px solid #D8B4FE; border-radius: 18px; padding: 1.2rem; background: #FFFFFF; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span class="badge-pill badge-kwai" style="font-size: 0.85rem;">Kwai Shop 💜</span>
+                <span style="font-size: 0.72rem; color: #581C87; font-weight: 700;">Nova Plataforma</span>
+              </div>
+              <p style="font-size: 0.78rem; color: var(--text-muted); margin: 0 0 0.6rem 0;">
+                20% sobre o preço de venda + taxa fixa de R$4,00 por venda.
+              </p>
+            </div>
+            <div style="border-top: 1px dashed #D8B4FE; padding-top: 0.75rem; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; font-weight: 600;">Comissão:</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #581C87;">20%</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="font-size: 0.8rem; font-weight: 600;">Taxa Fixa:</span>
+                <span style="font-size: 0.85rem; font-weight: 700; color: #581C87;">R$ 4,00 / venda</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Marketplace Tables Accordion / Tabs -->
+      <div class="cute-card">
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <button class="nav-pill-btn active" id="btn-plat-tab-tiktok" onclick="switchPlatSubTab('tiktok')">
+            TikTok Shop
+          </button>
+          <button class="nav-pill-btn" id="btn-plat-tab-ml" onclick="switchPlatSubTab('ml')">
+            Mercado Livre
+          </button>
+          <button class="nav-pill-btn" id="btn-plat-tab-shopee" onclick="switchPlatSubTab('shopee')">
+            Shopee
+          </button>
+          <button class="nav-pill-btn" id="btn-plat-tab-kwai" onclick="switchPlatSubTab('kwai')">
+            Kwai Shop ✨
+          </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="shell-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>Produto</th>
+                <th class="num">Custo Base</th>
+                <th class="num">Preço Venda</th>
+                <th class="num">Regra / Taxas Retidas</th>
+                <th class="num">Lucro Líquido Real</th>
+                <th class="num">Margem Líquida %</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="table-plataforma-body">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 4. PRODUTOS                                -->
+    <!-- ========================================== -->
+    <section id="tab-produtos" class="tab-section">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+          <h2 style="font-size: 1.5rem; color: #923456; margin: 0; font-weight: 700;">Catálogo de Mimos e Papelaria</h2>
+          <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Gerencie seus kits, adesivos e papelaria artesanal J4Y</p>
+        </div>
+        <button class="btn-cute" onclick="openProductModal()">
+          <span>🌸</span> Adicionar Produto
+        </button>
+      </div>
+
+      <!-- Product Cards Grid -->
+      <div id="product-cards-container" class="product-grid">
+        <!-- Generated dynamically -->
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 5. PROMOÇÕES                               -->
+    <!-- ========================================== -->
+    <section id="tab-promocoes" class="tab-section">
+      <div class="cute-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+          <div>
+            <h2 style="font-size: 1.4rem; color: #923456; margin: 0; font-weight: 700;">Campanhas & Promoções Especiais</h2>
+            <p style="margin: 0; color: var(--text-muted); font-size: 0.9rem;">Acompanhe descontos planejados e margens por canal</p>
+          </div>
+          <button class="btn-cute" onclick="openPromoModal()">
+            <span>🏷️</span> Nova Promoção
+          </button>
+        </div>
+
+        <div style="overflow-x: auto;">
+          <table class="shell-table" style="width: 100%;">
+            <thead>
+              <tr>
+                <th>Mês / Campanha</th>
+                <th>Produto</th>
+                <th>Plataforma</th>
+                <th class="num">Preço Normal</th>
+                <th class="num">Preço Promo</th>
+                <th class="num">Desconto</th>
+                <th>Período</th>
+                <th style="text-align: center;">Ações</th>
+              </tr>
+            </thead>
+            <tbody id="table-promocoes-body">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================== -->
+    <!-- 6. BACKUP (Segurança & Portabilidade)      -->
+    <!-- ========================================== -->
+    <section id="tab-backup" class="tab-section">
+      <!-- Container de Mensagens e Avisos Dinâmicos -->
+      <div id="backup-toast-container"></div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 900px; margin: 0 auto;">
+
+        <!-- Card 1 — Exportar backup -->
+        <div class="cute-card" style="background: #fdfbf7; border: 2px solid #c999e3;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+                <span style="font-size: 1.4rem;">⬇️</span>
+                <h2 style="font-size: 1.35rem; color: #750035; margin: 0; font-weight: 700;">
+                  Exportar backup completo
+                </h2>
+              </div>
+              <p style="color: #443257; margin: 0 0 0.85rem 0; font-size: 0.95rem; line-height: 1.5;">
+                Baixe um arquivo .json com todos os seus dados: produtos, fotos, preços, matérias-primas, promoções e taxas.
+              </p>
+            </div>
+            <span class="badge-pill" style="background: #f6d98b; color: #750035; border: 1px solid #ebd07d; font-size: 0.82rem; padding: 0.35rem 0.85rem;">
+              Proteção Total ✨
+            </span>
+          </div>
+
+          <!-- Resumo dinâmico -->
+          <div style="background: #FFFFFF; border-radius: 14px; padding: 0.85rem 1.15rem; border: 1px dashed #c999e3; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.6rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: #750035; font-size: 0.95rem;">
+              <span>📦</span>
+              <span id="backup-resumo-dinamico">Carregando dados...</span>
+            </div>
+            <span style="font-size: 0.78rem; color: #7A668D;">Inclui todas as fotos em alta resolução</span>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <button id="btn-export-backup" class="btn-rosa" onclick="exportBackup()">
+              <span>⬇️</span> Baixar backup (.json)
+            </button>
+            <a href="#" style="font-size: 0.82rem; color: #750035; text-decoration: underline; opacity: 0.85;" onclick="alert('Esta tela já opera com toda a independência necessária de salvamento offline e compatibilidade total!'); return false;">
+              Precisa de uma página de backup independente? Abra a tela de backup dedicada.
+            </a>
+          </div>
+        </div>
+
+        <!-- Card 2 — Importar backup -->
+        <div class="cute-card" style="background: #FFFFFF; border: 2px solid #a5cff9;">
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+            <span style="font-size: 1.4rem;">📂</span>
+            <h2 style="font-size: 1.35rem; color: #750035; margin: 0; font-weight: 700;">
+              Restaurar de um backup
+            </h2>
+          </div>
+          <p style="color: #443257; margin: 0 0 1.2rem 0; font-size: 0.95rem; line-height: 1.5;">
+            Selecione o arquivo .json exportado anteriormente. ATENÇÃO: isso substituirá todos os dados atuais.
+          </p>
+
+          <!-- Input oculto para carregar JSON -->
+          <input type="file" id="backup-file-input" accept=".json,application/json" style="display: none;" onchange="handleBackupFileSelect(event)">
+
+          <div style="margin-bottom: 1rem;">
+            <button class="btn-cute-outline" style="border-color: #a5cff9; color: #443257; padding: 0.7rem 1.4rem; font-size: 0.95rem;" onclick="document.getElementById('backup-file-input').click()">
+              <span>📂</span> Escolher arquivo .json
+            </button>
+          </div>
+
+          <!-- Preview da Importação (Inicialmente oculto) -->
+          <div id="backup-preview-box" style="display: none; background: #fdfbf7; border: 2px solid #c999e3; border-radius: 16px; padding: 1.2rem; margin-top: 1rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; flex-wrap: wrap; gap: 0.5rem;">
+              <strong style="color: #750035; font-size: 1rem;">🔍 Arquivo de Backup Validado!</strong>
+              <span id="import-preview-badge" class="badge-pill" style="background: #a5cff9; color: #113b27;">App J4Y Verificado</span>
+            </div>
+
+            <div style="font-size: 0.88rem; color: #443257; line-height: 1.6; margin-bottom: 1rem; background: #FFFFFF; border-radius: 10px; padding: 0.75rem 1rem; border: 1px solid #c999e3;">
+              <div>• <strong>Versão:</strong> <span id="import-prev-version">1.0</span></div>
+              <div>• <strong>Data de exportação:</strong> <span id="import-prev-date">--</span></div>
+              <div>• <strong>Conteúdo identificado:</strong> <span id="import-prev-counts" style="font-weight: 700; color: #ff65c7;">--</span></div>
+            </div>
+
+            <div style="background: #fbebee; color: #750035; border: 1.5px solid #f2b6cb; border-radius: 12px; padding: 0.75rem 1rem; font-size: 0.88rem; font-weight: 700; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span>⚠️</span> Todos os dados atuais serão substituídos por este backup.
+            </div>
+
+            <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+              <button id="btn-confirm-restore" class="btn-rosa" onclick="confirmBackupRestore()">
+                <span>✅</span> Confirmar e restaurar
+              </button>
+              <button class="btn-lilas-outline" onclick="cancelBackupRestore()">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 — Zona de perigo -->
+        <div class="card-danger-zone">
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.35rem;">
+            <span style="font-size: 1.4rem;">⚠️</span>
+            <h2 style="font-size: 1.35rem; color: #750035; margin: 0; font-weight: 700;">
+              Zona de perigo
+            </h2>
+          </div>
+          <p style="color: #750035; margin: 0 0 1rem 0; font-size: 0.95rem; line-height: 1.5;">
+            Apagar todos os dados salvos neste navegador. Não pode ser desfeito.
+          </p>
+
+          <div style="background: #FFFFFF; border: 1px dashed #ff4e16; border-radius: 14px; padding: 1rem; max-width: 520px; margin-bottom: 1rem;">
+            <label for="danger-confirm-input" style="display: block; font-size: 0.85rem; font-weight: 700; color: #750035; margin-bottom: 0.4rem;">
+              Para liberar o botão de exclusão, digite exatamente <strong style="color: #ff4e16; letter-spacing: 1px;">APAGAR</strong>:
+            </label>
+            <input type="text" id="danger-confirm-input" class="cute-input" placeholder="Digite APAGAR" autocomplete="off" oninput="handleDangerInputChange(this.value)" style="border-color: #ff4e16; font-weight: 700; letter-spacing: 0.5px;">
+          </div>
+
+          <button id="btn-danger-wipe" class="btn-danger-vibrant" disabled onclick="executeDangerWipe()">
+            <span>🗑️</span> Apagar todos os dados
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ========================================== -->
+  <!-- MODAL: ADICIONAR / EDITAR PRODUTO COMPLETO -->
+  <!-- ========================================== -->
+  <div id="modal-produto" class="modal-backdrop" onclick="if(event.target === this) closeProductModal()">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; border-bottom: 1.5px solid #FCE4EC; padding-bottom: 0.75rem;">
+        <div>
+          <h3 id="modal-prod-title" style="margin: 0; color: #923456; font-size: 1.4rem; font-weight: 700;">
+            Adicionar Novo Produto 💖
+          </h3>
+          <span style="font-size: 0.82rem; color: #7A668D;">Calcule matérias-primas, embalagem e margens com precisão</span>
+        </div>
+        <button type="button" style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #923456;" onclick="closeProductModal()">✕</button>
+      </div>
+
+      <form id="form-product" novalidate onsubmit="handleSaveProduct(event)">
+        <input type="hidden" id="prod-id" value="">
+        <input type="hidden" id="prod-foto-base64" value="">
+
+        <!-- Dados Principais: Nome, Foto & Preço de Venda -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label for="prod-nome" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: #5B4B7A;">
+              Nome do Produto <span style="color: #923456;">*</span>
+            </label>
+            <input type="text" id="prod-nome" class="cute-input" placeholder="ex: Kit Journal BTS Edição Especial" required>
+          </div>
+
+          <div>
+            <label for="prod-preco" style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: #923456;">
+              Preço de Venda (R$) <span style="color: #923456;">*</span>
+            </label>
+            <input type="number" id="prod-preco" step="any" min="0" inputmode="decimal" class="cute-input" style="font-weight: 700; color: #923456; font-size: 1.05rem;" placeholder="45.00" required onkeydown="handleDecimalKeyDown(event)" oninput="recalcModalMaterials()">
+          </div>
+        </div>
+
+        <!-- Upload de Foto do Produto com preview & conversão base64 -->
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: #5B4B7A;">
+            Foto do Produto 📸
+          </label>
+          <div class="img-upload-drop" onclick="document.getElementById('prod-foto-input').click()">
+            <div class="img-preview-box" id="img-preview-box">
+              <span id="img-placeholder-emoji" style="font-size: 1.8rem;">🌸</span>
+              <img id="img-preview-tag" src="" alt="Preview" style="display: none;">
+            </div>
+            <div style="flex: 1;">
+              <div style="font-size: 0.88rem; font-weight: 700; color: #923456;">Clique para enviar foto</div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Suporta PNG, JPG, WebP. Ficará salva no seu app!</div>
+            </div>
+            <button type="button" class="btn-cute-outline" style="padding: 0.35rem 0.85rem; font-size: 0.78rem;" onclick="event.stopPropagation(); document.getElementById('prod-foto-input').click()">
+              Escolher Arquivo
+            </button>
+            <button type="button" id="btn-remover-foto" class="btn-cute-outline" style="padding: 0.35rem 0.6rem; font-size: 0.78rem; color: #C02626; border-color: #FECACA; display: none;" onclick="event.stopPropagation(); removeProductPhoto()">
+              🗑️
+            </button>
+          </div>
+          <input type="file" id="prod-foto-input" accept="image/*" style="display: none;" onchange="handlePhotoUpload(event)">
+        </div>
+
+        <!-- Matérias-Primas Dinâmicas (O Coração do Cadastro) -->
+        <div style="margin-bottom: 1.25rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.95rem; font-weight: 700; color: #923456;">🧵 Matérias-Primas do Kit</span>
+              <span style="font-size: 0.78rem; color: #7A668D; display: block;">Adicione cada insumo usado para fabricar uma unidade</span>
+            </div>
+            <button type="button" class="btn-cute-outline" style="font-size: 0.8rem; padding: 0.35rem 0.85rem;" onclick="addMaterialRow()">
+              + Adicionar material
+            </button>
+          </div>
+
+          <div class="mat-table-wrapper">
+            <table class="mat-table" id="mat-table">
+              <thead>
+                <tr>
+                  <th style="min-width: 160px;">Material</th>
+                  <th style="width: 120px;">Valor Unitário (R$)</th>
+                  <th style="width: 100px;">Qtd. Usada</th>
+                  <th style="width: 110px; text-align: right;">Valor Kit</th>
+                  <th style="width: 45px; text-align: center;"></th>
+                </tr>
+              </thead>
+              <tbody id="mat-table-body">
+                <!-- Dynamic rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Custos Adicionais: Embalagem & Outros Custos -->
+        <div style="background: #FFFDF9; border: 1.5px solid #FFE6C7; border-radius: 16px; padding: 0.85rem 1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.88rem; font-weight: 700; color: #B45309; margin-bottom: 0.6rem;">
+            📦 Custos Adicionais da Venda
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+            <div>
+              <label for="prod-custo-embalagem" style="display: block; font-size: 0.8rem; font-weight: 600; color: #5B4B7A; margin-bottom: 0.25rem;">
+                Custo de Embalagem (R$)
+              </label>
+              <input type="number" id="prod-custo-embalagem" step="any" min="0" inputmode="decimal" value="0.00" class="cute-input" placeholder="ex: 1.50" onkeydown="handleDecimalKeyDown(event)" oninput="recalcModalMaterials()">
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Saquinho, fita, adesivo mimo</span>
+            </div>
+            <div>
+              <label for="prod-outros-custos" style="display: block; font-size: 0.8rem; font-weight: 600; color: #5B4B7A; margin-bottom: 0.25rem;">
+                Outros Custos (R$)
+              </label>
+              <input type="number" id="prod-outros-custos" step="any" min="0" inputmode="decimal" value="0.00" class="cute-input" placeholder="ex: 2.00" onkeydown="handleDecimalKeyDown(event)" oninput="recalcModalMaterials()">
+              <span style="font-size: 0.72rem; color: var(--text-muted);">Frete, mão de obra, energia</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Plataformas de Venda Permitidas -->
+        <div style="margin-bottom: 1.25rem;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.35rem; color: #5B4B7A;">Plataformas de Venda Ativas</label>
+          <div style="display: flex; gap: 1rem; flex-wrap: wrap; font-size: 0.9rem;">
+            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+              <input type="checkbox" id="check-tt" checked> TikTok Shop 🎵
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+              <input type="checkbox" id="check-ml" checked> Mercado Livre 💛
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+              <input type="checkbox" id="check-sh" checked> Shopee 🧡
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.35rem; cursor: pointer;">
+              <input type="checkbox" id="check-kw" checked> Kwai Shop 💜
+            </label>
+          </div>
+        </div>
+
+        <!-- Resumo em Tempo Real no Modal -->
+        <div style="background: linear-gradient(135deg, #FFF0F5 0%, #F5ECFD 100%); border: 2px solid #F5B6CE; border-radius: 18px; padding: 1.1rem; margin-bottom: 1.25rem;">
+          <div style="font-size: 0.82rem; font-weight: 700; color: #923456; text-transform: uppercase; margin-bottom: 0.6rem; letter-spacing: 0.5px;">
+            ✨ Resumo de Custos e Margem
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 0.75rem; font-size: 0.85rem;">
+            <div>
+              <span style="color: #7A668D; display: block;">Matérias-Primas:</span>
+              <strong id="modal-sum-mat">R$ 0,00</strong>
+            </div>
+            <div>
+              <span style="color: #7A668D; display: block;">Embalagem:</span>
+              <strong id="modal-sum-emb">R$ 0,00</strong>
+            </div>
+            <div>
+              <span style="color: #7A668D; display: block;">Outros Custos:</span>
+              <strong id="modal-sum-outros">R$ 0,00</strong>
+            </div>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1.5px dashed #E8AEC8; padding-top: 0.75rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <span style="font-size: 0.75rem; color: #923456; font-weight: 700; text-transform: uppercase;">CUSTO TOTAL DO PRODUTO</span>
+              <div id="modal-sum-custo-total" style="font-size: 1.7rem; font-weight: 800; color: #923456;">R$ 0,00</div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 0.75rem; color: #5B4B7A; font-weight: 700; text-transform: uppercase;">LUCRO & MARGEM BRUTA</span>
+              <div style="font-size: 1.15rem; font-weight: 700;">
+                <span id="modal-prev-lucro" style="color: #166A3D;">R$ 0,00</span>
+                <span id="modal-prev-margem" class="badge-pill badge-profit" style="margin-left: 0.4rem;">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ações -->
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn-cute-outline" onclick="closeProductModal()">Cancelar</button>
+          <button type="submit" class="btn-cute">Salvar Produto 💖</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: NOVA PROMOÇÃO                       -->
+  <!-- ========================================== -->
+  <div id="modal-promo" class="modal-backdrop" onclick="if(event.target === this) closePromoModal()">
+    <div class="modal-box">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+        <h3 style="margin: 0; color: #923456; font-size: 1.35rem; font-weight: 700;">
+          Nova Promoção ✨🏷️
+        </h3>
+        <button style="background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #923456;" onclick="closePromoModal()">✕</button>
+      </div>
+
+      <form id="form-promo" onsubmit="handleSavePromo(event)">
+        <div style="margin-bottom: 1rem;">
+          <label for="promo-mes" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Mês / Nome da Ação</label>
+          <input type="text" id="promo-mes" class="cute-input" placeholder="ex: Campanha Dia das Mães / Maio" required>
+        </div>
+
+        <div style="margin-bottom: 1rem;">
+          <label for="promo-prod-select" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Produto</label>
+          <select id="promo-prod-select" class="cute-input" required onchange="syncPromoNormalPrice(this.value)">
+            <!-- Populated via JS -->
+          </select>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label for="promo-preco-normal" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Preço Normal (R$)</label>
+            <input type="number" id="promo-preco-normal" step="0.10" class="cute-input" readonly style="background: #F8F5FA;">
+          </div>
+          <div>
+            <label for="promo-preco-promo" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Preço Promocional (R$)</label>
+            <input type="number" id="promo-preco-promo" step="0.10" class="cute-input" required oninput="calcPromoDiscountPreview()">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+          <div>
+            <label for="promo-data-inicio" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Data Início</label>
+            <input type="date" id="promo-data-inicio" class="cute-input" required>
+          </div>
+          <div>
+            <label for="promo-data-fim" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Data Fim</label>
+            <input type="date" id="promo-data-fim" class="cute-input" required>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 1.25rem;">
+          <label for="promo-canal" style="display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.35rem; color: #5B4B7A;">Plataforma Alvo</label>
+          <select id="promo-canal" class="cute-input" required>
+            <option value="Todas">Todas as Plataformas</option>
+            <option value="TikTok Shop">TikTok Shop</option>
+            <option value="Mercado Livre">Mercado Livre</option>
+            <option value="Shopee">Shopee</option>
+            <option value="Kwai Shop">Kwai Shop</option>
+          </select>
+        </div>
+
+        <div id="promo-preview-box" style="background: #FFF0F5; border-radius: 14px; padding: 0.85rem; margin-bottom: 1.25rem; font-size: 0.85rem; color: #5B4B7A; text-align: center;">
+          Desconto calculado: <b id="promo-prev-desc" style="color: #923456; font-size: 1.05rem;">0% OFF</b>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem;">
+          <button type="button" class="btn-cute-outline" onclick="closePromoModal()">Cancelar</button>
+          <button type="submit" class="btn-cute">Ativar Promoção 🏷️</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- J4Y Application Logic -->
+  <script>
+    // -------------------------------------------------------------
+    // DEFAULT INITIAL DATA WITH COMPREHENSIVE RAW MATERIALS (MUDANÇA 2)
+    // -------------------------------------------------------------
+    const INITIAL_PRODUCTS = [
+      {
+        id: 1,
+        nome: "Kit Journal BTS",
+        preco: 45.00,
+        custoEmbalagem: 2.00,
+        outrosCustos: 1.50,
+        foto: null,
+        imgQuery: "bts stationery journal",
+        platforms: ["tt", "ml", "shopee", "kwai"],
+        materiasPrimas: [
+          { material: "Papel Couché 180g (folhas A5)", valorUnitario: 0.60, quantidade: 10 },
+          { material: "Adesivos laminados BTS", valorUnitario: 1.80, quantidade: 3 },
+          { material: "Washi tape decorada", valorUnitario: 2.40, quantidade: 1 },
+          { material: "Card holográfico", valorUnitario: 1.20, quantidade: 1 }
+        ]
+      },
+      {
+        id: 2,
+        nome: "Kit 2 BTS",
+        preco: 55.00,
+        custoEmbalagem: 2.50,
+        outrosCustos: 2.00,
+        foto: null,
+        imgQuery: "kpop cute journal kit",
+        platforms: ["tt", "ml", "shopee", "kwai"],
+        materiasPrimas: [
+          { material: "Caderneta Journal A6 pastel", valorUnitario: 8.50, quantidade: 1 },
+          { material: "Cartela adesivos BTS especiais", valorUnitario: 2.00, quantidade: 3 },
+          { material: "Caneta gel temática", valorUnitario: 3.00, quantidade: 1 }
+        ]
+      },
+      {
+        id: 3,
+        nome: "Alfabetos 1 cartela",
+        preco: 16.00,
+        custoEmbalagem: 1.20,
+        outrosCustos: 0.80,
+        foto: null,
+        imgQuery: "pastel alphabet stickers",
+        platforms: ["tt", "ml", "shopee", "kwai"],
+        materiasPrimas: [
+          { material: "Vinil adesivo fosco impresso", valorUnitario: 3.20, quantidade: 1 },
+          { material: "Lamino protetor fosco", valorUnitario: 0.80, quantidade: 1 }
+        ]
+      },
+      {
+        id: 4,
+        nome: "Alfabetos 3 cartelas",
+        preco: 38.00,
+        custoEmbalagem: 1.80,
+        outrosCustos: 1.20,
+        foto: null,
+        imgQuery: "cute alphabet deco stickers",
+        platforms: ["tt", "ml", "shopee", "kwai"],
+        materiasPrimas: [
+          { material: "Cartelas de adesivos alfabéticos sortidos", valorUnitario: 4.00, quantidade: 3 }
+        ]
+      },
+      {
+        id: 5,
+        nome: "Alfabetos 5 cartelas",
+        preco: 58.00,
+        custoEmbalagem: 2.00,
+        outrosCustos: 2.00,
+        foto: null,
+        imgQuery: "stationery sticker sheets cute",
+        platforms: ["tt", "ml", "shopee", "kwai"],
+        materiasPrimas: [
+          { material: "Cartelas de adesivos alfabéticos glitter & pastel", valorUnitario: 4.00, quantidade: 5 }
+        ]
+      },
+      {
+        id: 6,
+        nome: "Fundos Journal",
+        preco: 29.90,
+        custoEmbalagem: 1.50,
+        outrosCustos: 1.50,
+        foto: null,
+        imgQuery: "aesthetic scrapbook paper",
+        platforms: ["tt", "ml", "shopee", "kwai"],
+        materiasPrimas: [
+          { material: "Papel offset 120g estampado (20 fls)", valorUnitario: 0.40, quantidade: 20 },
+          { material: "Envelope temático artesanal", valorUnitario: 1.00, quantidade: 1 }
+        ]
+      }
+    ];
+
+    const INITIAL_TAX_SETTINGS = {
+      tiktok: { sfpActive: true, sfpPct: 6 },
+      ml: { comissao: 15, frete: 12.00 },
+      shopee: { comissao: 20, taxaFixa: 4.50 },
+      kwai: { comissao: 20, taxaFixa: 4.00 }
+    };
+
+    const INITIAL_PROMOTIONS = [
+      { id: 1, mes: "Maio / Mães", produtoId: 1, prodNome: "Kit Journal BTS", precoNormal: 45.00, precoPromo: 38.90, dataInicio: "2025-05-01", dataFim: "2025-05-15", canal: "TikTok Shop" },
+      { id: 2, mes: "Junho / Namorados", produtoId: 4, prodNome: "Alfabetos 3 cartelas", precoNormal: 38.00, precoPromo: 29.90, dataInicio: "2025-06-01", dataFim: "2025-06-12", canal: "Shopee" },
+      { id: 3, mes: "Julho / Férias", produtoId: 6, prodNome: "Fundos Journal", precoNormal: 29.90, precoPromo: 24.90, dataInicio: "2025-07-10", dataFim: "2025-07-25", canal: "Mercado Livre" },
+      { id: 4, mes: "Agosto / K-Fest", produtoId: 2, prodNome: "Kit 2 BTS", precoNormal: 55.00, precoPromo: 49.90, dataInicio: "2025-08-01", dataFim: "2025-08-20", canal: "Kwai Shop" }
+    ];
+
+    function loadSavedTaxSettings() {
+      try {
+        const saved = JSON.parse(localStorage.getItem("j4y_tax_rules"));
+        if (saved && saved.tiktok && saved.ml && saved.shopee && saved.kwai) {
+          return saved;
+        }
+      } catch (e) {}
+      return INITIAL_TAX_SETTINGS;
+    }
+
+    // Migration helper: ensures all products have materiasPrimas, embalagem, outrosCustos, custoTotal
+    function migrateProducts(rawList) {
+      if (!rawList || !Array.isArray(rawList) || rawList.length === 0) {
+        return INITIAL_PRODUCTS;
+      }
+      return rawList.map((p, idx) => {
+        // If legacy product doesn't have materiasPrimas
+        if (!p.materiasPrimas || !Array.isArray(p.materiasPrimas)) {
+          const matchInitial = INITIAL_PRODUCTS.find(i => i.id == p.id || i.nome.toLowerCase() === (p.nome || "").toLowerCase());
+          if (matchInitial) {
+            p.materiasPrimas = JSON.parse(JSON.stringify(matchInitial.materiasPrimas));
+            p.custoEmbalagem = matchInitial.custoEmbalagem;
+            p.outrosCustos = matchInitial.outrosCustos;
+          } else {
+            const legacyCusto = Number(p.custo) || 0;
+            p.materiasPrimas = [
+              { material: "Insumo principal", valorUnitario: legacyCusto, quantidade: 1 }
+            ];
+            p.custoEmbalagem = 0;
+            p.outrosCustos = 0;
+          }
+        }
+        if (p.custoEmbalagem === undefined) p.custoEmbalagem = 0;
+        if (p.outrosCustos === undefined) p.outrosCustos = 0;
+        if (!p.platforms) p.platforms = ["tt", "ml", "shopee", "kwai"];
+        if (!p.platforms.includes("kwai")) p.platforms.push("kwai");
+        if (p.foto === undefined) p.foto = null;
+        return p;
+      });
+    }
+
+    // Função utilitária global de parsing numérico com suporte a decimais e vírgula
+    function parseNumberInput(val) {
+      if (val === null || val === undefined) return 0;
+      if (typeof val === "number") return isNaN(val) || val < 0 ? 0 : val;
+      const cleaned = String(val).trim().replace(/\s+/g, "").replace(",", ".");
+      const parsed = parseFloat(cleaned);
+      return isNaN(parsed) || parsed < 0 ? 0 : parsed;
+    }
+
+    // Exibição de quantidades: até 2 casas decimais quando necessário (ex: 0,5 / 1,25 / 3) sem forçar .00
+    function formatQtd(val) {
+      const num = parseNumberInput(val);
+      const rounded = Math.round(num * 100) / 100;
+      return rounded.toString().replace(".", ",");
+    }
+
+    // Facilita digitação de vírgula brasileira em campos decimais
+    function handleDecimalKeyDown(e) {
+      if (e.key === ',') {
+        e.preventDefault();
+        if (!document.execCommand('insertText', false, '.')) {
+          const start = e.target.selectionStart;
+          const end = e.target.selectionEnd;
+          const oldVal = e.target.value || '';
+          if (start !== null && end !== null) {
+            e.target.value = oldVal.substring(0, start) + '.' + oldVal.substring(end);
+            e.target.setSelectionRange(start + 1, start + 1);
+          } else {
+            e.target.value += '.';
+          }
+          e.target.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+    }
+
+    let state = {
+      products: migrateProducts(JSON.parse(localStorage.getItem("j4y_products"))),
+      taxes: loadSavedTaxSettings(),
+      promotions: JSON.parse(localStorage.getItem("j4y_promotions")) || INITIAL_PROMOTIONS,
+      currentPlatSubTab: "tiktok"
+    };
+
+    // Calculate sum of raw materials: sum(valorUnitario * quantidadeUsada)
+    function getProductCustoMaterias(prod) {
+      if (!prod) return 0;
+      if (prod.materiasPrimas && Array.isArray(prod.materiasPrimas)) {
+        return prod.materiasPrimas.reduce((acc, m) => {
+          const vu = parseNumberInput(m.valorUnitario);
+          const qtd = parseNumberInput(m.quantidade);
+          return acc + (vu * qtd);
+        }, 0);
+      }
+      return parseNumberInput(prod.custo);
+    }
+
+    // Total Product Cost: custoMateriasPrimas + custoEmbalagem + outrosCustos
+    function getProductCustoTotal(prod) {
+      if (!prod) return 0;
+      const mat = getProductCustoMaterias(prod);
+      const emb = parseNumberInput(prod.custoEmbalagem);
+      const outros = parseNumberInput(prod.outrosCustos);
+      return mat + emb + outros;
+    }
+
+    function saveState() {
+      localStorage.setItem("j4y_products", JSON.stringify(state.products));
+      localStorage.setItem("j4y_tax_rules", JSON.stringify(state.taxes));
+      localStorage.setItem("j4y_promotions", JSON.stringify(state.promotions));
+    }
+
+    // Currency Formatter Helper
+    function formatBRL(val) {
+      return (window.skipShell && window.skipShell.fmt)
+        ? window.skipShell.fmt.brl(val)
+        : "R$ " + Number(val || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    // -------------------------------------------------------------
+    // EXACT REAL FEE CALCULATORS (AUDITADO E MATEMATICAMENTE EXATO)
+    // -------------------------------------------------------------
+    // 1. TIKTOK SHOP
+    // se preco < 50 → taxa = preco * 0.10 + 4.00
+    // se preco >= 50 → taxa = preco * 0.06 + 6.00
+    // Se SFP ativo, somar preco * 0.06 (ou sfpPct / 100)
+    function calcTikTok(precoVenda, custoTotal, sfpActive, sfpPct) {
+      const p = parseNumberInput(precoVenda);
+      const c = parseNumberInput(custoTotal);
+      const isUnder50 = p < 50;
+      const comissaoPct = isUnder50 ? 0.10 : 0.06;
+      const taxaFixa = isUnder50 ? 4.00 : 6.00;
+      const taxaBase = (p * comissaoPct) + taxaFixa;
+      const taxaSFP = sfpActive ? (p * (parseNumberInput(sfpPct !== undefined ? sfpPct : 6) / 100)) : 0;
+      const taxaTotal = taxaBase + taxaSFP;
+
+      const lucroLiquido = p - c - taxaTotal;
+      const margemLiquida = p > 0 ? (lucroLiquido / p) * 100 : 0;
+      const lucroBruto = p - c;
+      const margemBruta = p > 0 ? (lucroBruto / p) * 100 : 0;
+
+      return {
+        comissaoPct: isUnder50 ? 10 : 6,
+        taxaFixa,
+        taxaBase,
+        taxaSFP,
+        totalTaxas: taxaTotal,
+        lucro: lucroLiquido,
+        margem: margemLiquida,
+        lucroBruto,
+        margemBruta,
+        descRule: isUnder50 ? "10% + R$ 4,00" : "6% + R$ 6,00"
+      };
+    }
+
+    // 2. MERCADO LIVRE
+    // taxa = preco * (percentualComissao/100) + freteFixo (default 15%, frete R$12,00)
+    function calcMercadoLivre(precoVenda, custoTotal, comissaoPct, freteFixo) {
+      const p = parseNumberInput(precoVenda);
+      const c = parseNumberInput(custoTotal);
+      const pct = comissaoPct !== undefined ? parseNumberInput(comissaoPct) : 15;
+      const frete = freteFixo !== undefined ? parseNumberInput(freteFixo) : 12.00;
+
+      const valComissao = p * (pct / 100);
+      const taxaTotal = valComissao + frete;
+
+      const lucroLiquido = p - c - taxaTotal;
+      const margemLiquida = p > 0 ? (lucroLiquido / p) * 100 : 0;
+      const lucroBruto = p - c;
+      const margemBruta = p > 0 ? (lucroBruto / p) * 100 : 0;
+
+      return {
+        comissaoPct: pct,
+        frete,
+        valComissao,
+        totalTaxas: taxaTotal,
+        lucro: lucroLiquido,
+        margem: margemLiquida,
+        lucroBruto,
+        margemBruta,
+        descRule: `${pct}% + Frete ${formatBRL(frete)}`
+      };
+    }
+
+    // 3. SHOPEE
+    // taxa = preco * 0.20 + 4.50
+    function calcShopee(precoVenda, custoTotal) {
+      const p = parseNumberInput(precoVenda);
+      const c = parseNumberInput(custoTotal);
+      const valComissao = p * 0.20;
+      const taxaFixa = 4.50;
+      const taxaTotal = valComissao + taxaFixa;
+
+      const lucroLiquido = p - c - taxaTotal;
+      const margemLiquida = p > 0 ? (lucroLiquido / p) * 100 : 0;
+      const lucroBruto = p - c;
+      const margemBruta = p > 0 ? (lucroBruto / p) * 100 : 0;
+
+      return {
+        comissaoPct: 20,
+        taxaFixa,
+        valComissao,
+        totalTaxas: taxaTotal,
+        lucro: lucroLiquido,
+        margem: margemLiquida,
+        lucroBruto,
+        margemBruta,
+        descRule: "20% + R$ 4,50"
+      };
+    }
+
+    // 4. KWAI SHOP
+    // taxa = preco * 0.20 + 4.00
+    function calcKwai(precoVenda, custoTotal) {
+      const p = parseNumberInput(precoVenda);
+      const c = parseNumberInput(custoTotal);
+      const valComissao = p * 0.20;
+      const taxaFixa = 4.00;
+      const taxaTotal = valComissao + taxaFixa;
+
+      const lucroLiquido = p - c - taxaTotal;
+      const margemLiquida = p > 0 ? (lucroLiquido / p) * 100 : 0;
+      const lucroBruto = p - c;
+      const margemBruta = p > 0 ? (lucroBruto / p) * 100 : 0;
+
+      return {
+        comissaoPct: 20,
+        taxaFixa,
+        valComissao,
+        totalTaxas: taxaTotal,
+        lucro: lucroLiquido,
+        margem: margemLiquida,
+        lucroBruto,
+        margemBruta,
+        descRule: "20% + R$ 4,00"
+      };
+    }
+
+    // -------------------------------------------------------------
+    // NAVIGATION
+    // -------------------------------------------------------------
+    function switchTab(tabId) {
+      document.querySelectorAll(".tab-section").forEach(sec => sec.classList.remove("active"));
+      document.querySelectorAll(".nav-pill-btn[data-tab]").forEach(btn => btn.classList.remove("active"));
+
+      const target = document.getElementById("tab-" + tabId);
+      const btn = document.querySelector(`.nav-pill-btn[data-tab="${tabId}"]`);
+      if (target) target.classList.add("active");
+      if (btn) btn.classList.add("active");
+
+      if (tabId === "dashboard") {
+        renderDashboardChart();
+      } else if (tabId === "backup") {
+        updateBackupStats();
+      }
+    }
+
+    function switchPlatSubTab(plat) {
+      state.currentPlatSubTab = plat;
+      ["tiktok", "ml", "shopee", "kwai"].forEach(p => {
+        const b = document.getElementById(`btn-plat-tab-${p}`);
+        if (b) b.classList.toggle("active", p === plat);
+      });
+      renderPlatformTable();
+    }
+
+    // -------------------------------------------------------------
+    // DASHBOARD RENDERING & CHART
+    // -------------------------------------------------------------
+    function renderDashboard() {
+      const prods = state.products;
+      const count = prods.length;
+
+      document.getElementById("kpi-total-items").innerText = count;
+
+      const sumCusto = prods.reduce((acc, p) => acc + getProductCustoTotal(p), 0);
+      const sumPreco = prods.reduce((acc, p) => acc + (Number(p.preco) || 0), 0);
+      const mediaCusto = count > 0 ? (sumCusto / count) : 0;
+      const mediaPreco = count > 0 ? (sumPreco / count) : 0;
+      const mediaLucro = mediaPreco - mediaCusto;
+      const margemGeral = mediaPreco > 0 ? ((mediaLucro / mediaPreco) * 100).toFixed(1) : "0.0";
+
+      document.getElementById("kpi-custo-medio").innerText = formatBRL(mediaCusto);
+      document.getElementById("kpi-preco-medio").innerText = formatBRL(mediaPreco);
+      document.getElementById("kpi-lucro-medio").innerText = formatBRL(mediaLucro);
+      document.getElementById("kpi-margem-badge").innerText = `Margem bruta média: ${margemGeral}%`;
+      if (mediaLucro < 0) {
+        document.getElementById("kpi-lucro-medio").classList.add("negative-profit");
+      } else {
+        document.getElementById("kpi-lucro-medio").classList.remove("negative-profit");
+      }
+
+      // Quick overview table
+      const tbody = document.getElementById("quick-overview-rows");
+      tbody.innerHTML = prods.slice(0, 5).map(p => {
+        const cTotal = getProductCustoTotal(p);
+        const preco = Number(p.preco) || 0;
+        const lucro = preco - cTotal;
+        const isNeg = lucro < 0;
+        return `
+          <tr>
+            <td><strong>${p.nome}</strong></td>
+            <td class="num">${formatBRL(cTotal)}</td>
+            <td class="num">${formatBRL(preco)}</td>
+            <td class="num" style="font-weight: 700; color: ${isNeg ? '#C02626' : '#166A3D'};">${formatBRL(lucro)}</td>
+          </tr>
+        `;
+      }).join("");
+
+      renderDashboardChart();
+    }
+
+    function renderDashboardChart() {
+      const chartEl = document.getElementById("chart-lucro-plataformas");
+      if (!chartEl || !window.skipChart) return;
+
+      const prods = state.products;
+      if (!prods.length) {
+        chartEl.innerHTML = "<p style='color:var(--text-muted);text-align:center;padding:2rem;'>Nenhum produto cadastrado</p>";
+        return;
+      }
+
+      let totalTT = 0, totalML = 0, totalSH = 0, totalKW = 0;
+
+      prods.forEach(p => {
+        const cTotal = getProductCustoTotal(p);
+        const preco = Number(p.preco) || 0;
+        const rTT = calcTikTok(preco, cTotal, state.taxes.tiktok.sfpActive, state.taxes.tiktok.sfpPct);
+        const rML = calcMercadoLivre(preco, cTotal, state.taxes.ml.comissao, state.taxes.ml.frete);
+        const rSH = calcShopee(preco, cTotal);
+        const rKW = calcKwai(preco, cTotal);
+
+        totalTT += rTT.lucro;
+        totalML += rML.lucro;
+        totalSH += rSH.lucro;
+        totalKW += rKW.lucro;
+      });
+
+      const avgTT = totalTT / prods.length;
+      const avgML = totalML / prods.length;
+      const avgSH = totalSH / prods.length;
+      const avgKW = totalKW / prods.length;
+
+      chartEl.innerHTML = "";
+      window.skipChart.bar(chartEl, {
+        labels: ["TikTok Shop", "Mercado Livre", "Shopee", "Kwai Shop"],
+        values: [
+          Number(avgTT.toFixed(2)),
+          Number(avgML.toFixed(2)),
+          Number(avgSH.toFixed(2)),
+          Number(avgKW.toFixed(2))
+        ],
+        color: "#E88BA9",
+        format: "brl"
+      });
+    }
+
+    // -------------------------------------------------------------
+    // PRECIFICAÇÃO (Calculator & Table)
+    // -------------------------------------------------------------
+    function populateCalcSelect() {
+      const select = document.getElementById("calc-select-prod");
+      if (!select) return;
+      const cur = select.value;
+      select.innerHTML = '<option value="">-- Personalizado --</option>' +
+        state.products.map(p => `<option value="${p.id}">${p.nome}</option>`).join("");
+      if (cur) select.value = cur;
+    }
+
+    function loadProductIntoCalc(prodId) {
+      if (!prodId) return;
+      const prod = state.products.find(p => p.id == prodId);
+      if (prod) {
+        document.getElementById("calc-custo").value = getProductCustoTotal(prod).toFixed(2);
+        document.getElementById("calc-preco-venda").value = (Number(prod.preco) || 0).toFixed(2);
+        const select = document.getElementById("calc-select-prod");
+        if (select) select.value = prod.id;
+        recalcLiveSimulator();
+      }
+    }
+
+    function recalcLiveSimulator() {
+      const custo = parseNumberInput(document.getElementById("calc-custo").value);
+      const preco = parseNumberInput(document.getElementById("calc-preco-venda").value);
+
+      const lucroBruto = preco - custo;
+      const margemBruta = preco > 0 ? ((lucroBruto / preco) * 100).toFixed(1) : "0.0";
+
+      const resMargemEl = document.getElementById("calc-res-margem");
+      const resLucroEl = document.getElementById("calc-res-lucro");
+
+      resMargemEl.innerText = margemBruta + "%";
+      resLucroEl.innerText = "Lucro Bruto: " + formatBRL(lucroBruto);
+      if (lucroBruto < 0) {
+        resMargemEl.style.color = "#C02626";
+        resLucroEl.style.color = "#C02626";
+      } else {
+        resMargemEl.style.color = "#166A3D";
+        resLucroEl.style.color = "#5B4B7A";
+      }
+
+      // 1. TIKTOK SHOP
+      const rTT = calcTikTok(preco, custo, state.taxes.tiktok.sfpActive, state.taxes.tiktok.sfpPct);
+      document.getElementById("sim-taxa-tt").innerText = rTT.descRule;
+      document.getElementById("sim-detalhe-tt").innerText = state.taxes.tiktok.sfpActive 
+        ? `Comissão + SFP (${state.taxes.tiktok.sfpPct}%)` 
+        : `Sem SFP (apenas comissão)`;
+      document.getElementById("sim-val-taxa-tt").innerText = formatBRL(rTT.totalTaxas);
+      const simLucroTT = document.getElementById("sim-lucro-tt");
+      simLucroTT.innerText = formatBRL(rTT.lucro) + " líq.";
+      simLucroTT.style.color = rTT.lucro >= 0 ? '#166A3D' : '#C02626';
+      document.getElementById("sim-margem-tt").innerText = "Margem líq: " + rTT.margem.toFixed(1) + "%";
+
+      // 2. MERCADO LIVRE
+      const rML = calcMercadoLivre(preco, custo, state.taxes.ml.comissao, state.taxes.ml.frete);
+      document.getElementById("sim-taxa-ml").innerText = `${state.taxes.ml.comissao}% + Frete`;
+      document.getElementById("sim-detalhe-ml").innerText = `Comissão + Frete ${formatBRL(state.taxes.ml.frete)}`;
+      document.getElementById("sim-val-taxa-ml").innerText = formatBRL(rML.totalTaxas);
+      const simLucroML = document.getElementById("sim-lucro-ml");
+      simLucroML.innerText = formatBRL(rML.lucro) + " líq.";
+      simLucroML.style.color = rML.lucro >= 0 ? '#166A3D' : '#C02626';
+      document.getElementById("sim-margem-ml").innerText = "Margem líq: " + rML.margem.toFixed(1) + "%";
+
+      // 3. SHOPEE
+      const rSH = calcShopee(preco, custo);
+      document.getElementById("sim-val-taxa-sh").innerText = formatBRL(rSH.totalTaxas);
+      const simLucroSH = document.getElementById("sim-lucro-sh");
+      simLucroSH.innerText = formatBRL(rSH.lucro) + " líq.";
+      simLucroSH.style.color = rSH.lucro >= 0 ? '#166A3D' : '#C02626';
+      document.getElementById("sim-margem-sh").innerText = "Margem líq: " + rSH.margem.toFixed(1) + "%";
+
+      // 4. KWAI SHOP
+      const rKW = calcKwai(preco, custo);
+      document.getElementById("sim-val-taxa-kw").innerText = formatBRL(rKW.totalTaxas);
+      const simLucroKW = document.getElementById("sim-lucro-kw");
+      simLucroKW.innerText = formatBRL(rKW.lucro) + " líq.";
+      simLucroKW.style.color = rKW.lucro >= 0 ? '#166A3D' : '#C02626';
+      document.getElementById("sim-margem-kw").innerText = "Margem líq: " + rKW.margem.toFixed(1) + "%";
+
+      // Render Teste de Cálculo (Memória de Cálculo Visível)
+      renderCalculationTestMemory(preco, custo, rTT, rML, rSH, rKW);
+    }
+
+    function renderCalculationTestMemory(preco, custoTotal, rTT, rML, rSH, rKW) {
+      const detailsEl = document.getElementById("calc-test-details");
+      if (!detailsEl) return;
+
+      const selId = document.getElementById("calc-select-prod").value;
+      const prod = selId ? state.products.find(p => p.id == selId) : null;
+
+      let matCost = custoTotal;
+      let embCost = 0;
+      let outrosCost = 0;
+      let matBreakdownHtml = "";
+
+      if (prod) {
+        matCost = getProductCustoMaterias(prod);
+        embCost = Number(prod.custoEmbalagem) || 0;
+        outrosCost = Number(prod.outrosCustos) || 0;
+        matBreakdownHtml = `
+          <div style="background:#FFF9FB; border:1px solid #F8DCE7; border-radius:10px; padding:0.6rem 0.8rem; margin:0.5rem 0;">
+            <strong>Matérias-primas de "${prod.nome}":</strong>
+            <ul style="margin:0.25rem 0 0 1.2rem; padding:0; font-size:0.8rem;">
+              ${(prod.materiasPrimas || []).map(m => `<li>${m.material || 'Insumo'}: ${formatQtd(m.quantidade)} × ${formatBRL(m.valorUnitario)} = <strong>${formatBRL(parseNumberInput(m.quantidade) * parseNumberInput(m.valorUnitario))}</strong></li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }
+
+      detailsEl.innerHTML = `
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:1.2rem;">
+          <div>
+            <h4 style="margin:0 0 0.4rem 0; color:#923456; font-size:0.95rem;">📦 Memória do Custo do Produto</h4>
+            <div style="background:#FAF7FD; border:1px solid #E9DDF5; border-radius:10px; padding:0.6rem 0.8rem;">
+              <div>• Custo Matérias-Primas: <strong>${formatBRL(matCost)}</strong></div>
+              <div>• Custo Embalagem: <strong>${formatBRL(embCost)}</strong></div>
+              <div>• Outros Custos (frete/mão de obra): <strong>${formatBRL(outrosCost)}</strong></div>
+              <div style="border-top:1px dashed #D8C7F0; margin-top:0.35rem; padding-top:0.35rem; font-weight:700; color:#923456;">
+                = CUSTO TOTAL: ${formatBRL(custoTotal)}
+              </div>
+            </div>
+            ${matBreakdownHtml}
+            <div style="margin-top:0.4rem; font-size:0.8rem; color:#5B4B7A;">
+              Preço de Venda Simulado: <strong>${formatBRL(preco)}</strong> | Lucro Bruto: <strong>${formatBRL(preco - custoTotal)}</strong>
+            </div>
+          </div>
+
+          <div>
+            <h4 style="margin:0 0 0.4rem 0; color:#5B4B7A; font-size:0.95rem;">🛍️ Detalhamento das Taxas por Plataforma</h4>
+            <table style="width:100%; border-collapse:collapse; font-size:0.8rem;">
+              <tbody>
+                <tr style="border-bottom:1px solid #F0E4F9;">
+                  <td style="padding:4px 0;"><strong>TikTok Shop</strong></td>
+                  <td style="padding:4px 0; color:#7A668D;">${preco < 50 ? 'Preço < 50: 10% + R$ 4,00' : 'Preço ≥ 50: 6% + R$ 6,00'}${state.taxes.tiktok.sfpActive ? ' + 6% SFP' : ''}</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:#923456;">-${formatBRL(rTT.totalTaxas)}</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:${rTT.lucro >= 0 ? '#166A3D' : '#C02626'};">${formatBRL(rTT.lucro)} líq.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #F0E4F9;">
+                  <td style="padding:4px 0;"><strong>Mercado Livre</strong></td>
+                  <td style="padding:4px 0; color:#7A668D;">${state.taxes.ml.comissao}% comissão + frete fixo ${formatBRL(state.taxes.ml.frete)}</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:#923456;">-${formatBRL(rML.totalTaxas)}</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:${rML.lucro >= 0 ? '#166A3D' : '#C02626'};">${formatBRL(rML.lucro)} líq.</td>
+                </tr>
+                <tr style="border-bottom:1px solid #F0E4F9;">
+                  <td style="padding:4px 0;"><strong>Shopee</strong></td>
+                  <td style="padding:4px 0; color:#7A668D;">20% comissão + R$ 4,50 fixo</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:#923456;">-${formatBRL(rSH.totalTaxas)}</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:${rSH.lucro >= 0 ? '#166A3D' : '#C02626'};">${formatBRL(rSH.lucro)} líq.</td>
+                </tr>
+                <tr>
+                  <td style="padding:4px 0;"><strong>Kwai Shop</strong></td>
+                  <td style="padding:4px 0; color:#7A668D;">20% comissão + R$ 4,00 fixo</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:#923456;">-${formatBRL(rKW.totalTaxas)}</td>
+                  <td class="num" style="padding:4px 0; font-weight:700; color:${rKW.lucro >= 0 ? '#166A3D' : '#C02626'};">${formatBRL(rKW.lucro)} líq.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderPrecificacaoTable() {
+      const tbody = document.getElementById("table-precificacao-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = state.products.map(p => {
+        const cTotal = getProductCustoTotal(p);
+        const preco = Number(p.preco) || 0;
+        const lucro = preco - cTotal;
+        const margem = preco > 0 ? ((lucro / preco) * 100).toFixed(1) : "0.0";
+        const isNeg = lucro < 0;
+
+        return `
+          <tr>
+            <td>
+              <div style="width: 38px; height: 38px; border-radius: 8px; background: #FFF0F5; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid #F5D5E4;">
+                ${p.foto ? `<img src="${p.foto}" alt="" style="width:100%; height:100%; object-fit:cover;">` : '🎀'}
+              </div>
+            </td>
+            <td>
+              <strong>${p.nome}</strong>
+              <div style="font-size: 0.73rem; color: var(--text-muted); display: flex; gap: 4px; margin-top: 3px; flex-wrap: wrap;">
+                ${p.platforms.includes("tt") ? '<span class="badge-pill badge-tiktok" style="padding: 1px 6px;">TT</span>' : ''}
+                ${p.platforms.includes("ml") ? '<span class="badge-pill badge-ml" style="padding: 1px 6px;">ML</span>' : ''}
+                ${p.platforms.includes("shopee") ? '<span class="badge-pill badge-shopee" style="padding: 1px 6px;">SH</span>' : ''}
+                ${p.platforms.includes("kwai") ? '<span class="badge-pill badge-kwai" style="padding: 1px 6px;">KW</span>' : ''}
+              </div>
+            </td>
+            <td class="num">
+              <strong>${formatBRL(cTotal)}</strong>
+              <div style="font-size:0.7rem; color:var(--text-muted);">${(p.materiasPrimas || []).length} materiais</div>
+            </td>
+            <td class="num">
+              <input type="number" step="0.50" min="0" value="${preco.toFixed(2)}" style="width: 88px; padding: 4px 6px; border-radius: 8px; border: 1.5px solid #F5B6CE; text-align: right; font-weight: 700; color: #923456; font-family: inherit;" onchange="updateProductDirectly(${p.id}, 'preco', this.value)">
+            </td>
+            <td class="num" style="font-weight: 700; color: ${isNeg ? '#C02626' : '#166A3D'};">${formatBRL(lucro)}</td>
+            <td class="num">
+              <span class="badge-pill ${isNeg ? 'negative-profit' : 'badge-profit'}">${margem}%</span>
+            </td>
+            <td style="text-align: center;">
+              <button class="btn-cute-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick="loadProductIntoCalc(${p.id}); switchTab('precificacao');">
+                Simular ⚡
+              </button>
+              <button class="btn-cute-outline" style="padding: 4px 8px; font-size: 0.75rem; margin-left: 4px;" onclick="openEditProductModal(${p.id})">
+                Editar ✏️
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function updateProductDirectly(id, field, value) {
+      const num = parseNumberInput(value);
+      const p = state.products.find(item => item.id == id);
+      if (p) {
+        p[field] = num;
+        saveState();
+        refreshAllViews();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // PLATAFORMAS (Settings updates & Detailed Tables)
+    // -------------------------------------------------------------
+    function updateTikTokSettings() {
+      const chk = document.getElementById("tax-tt-sfp-active");
+      const val = parseFloat(document.getElementById("tax-tt-sfp-pct").value) || 0;
+      state.taxes.tiktok.sfpActive = chk.checked;
+      state.taxes.tiktok.sfpPct = val;
+      saveState();
+      recalcLiveSimulator();
+      renderPlatformTable();
+      renderDashboardChart();
+    }
+
+    function updateMLSettings() {
+      const com = parseFloat(document.getElementById("tax-ml-comissao").value) || 0;
+      const frete = parseFloat(document.getElementById("tax-ml-frete").value) || 0;
+      state.taxes.ml.comissao = com;
+      state.taxes.ml.frete = frete;
+      saveState();
+      recalcLiveSimulator();
+      renderPlatformTable();
+      renderDashboardChart();
+    }
+
+    function renderPlatformTable() {
+      const tbody = document.getElementById("table-plataforma-body");
+      if (!tbody) return;
+
+      const currentPlat = state.currentPlatSubTab;
+
+      tbody.innerHTML = state.products.map(p => {
+        const cTotal = getProductCustoTotal(p);
+        const preco = Number(p.preco) || 0;
+        let res = { totalTaxas: 0, lucro: 0, margem: 0, descRule: "" };
+
+        if (currentPlat === "tiktok") {
+          res = calcTikTok(preco, cTotal, state.taxes.tiktok.sfpActive, state.taxes.tiktok.sfpPct);
+        } else if (currentPlat === "ml") {
+          res = calcMercadoLivre(preco, cTotal, state.taxes.ml.comissao, state.taxes.ml.frete);
+        } else if (currentPlat === "shopee") {
+          res = calcShopee(preco, cTotal);
+        } else if (currentPlat === "kwai") {
+          res = calcKwai(preco, cTotal);
+        }
+
+        const isHealthy = res.lucro > 0 && res.margem >= 20;
+        const isNeg = res.lucro < 0;
+
+        return `
+          <tr>
+            <td>
+              <div style="display:flex; align-items:center; gap:0.5rem;">
+                <div style="width:30px; height:30px; border-radius:6px; background:#FFF0F5; overflow:hidden; display:flex; align-items:center; justify-content:center; border:1px solid #F5D5E4; flex-shrink:0;">
+                  ${p.foto ? `<img src="${p.foto}" alt="" style="width:100%; height:100%; object-fit:cover;">` : '🎀'}
+                </div>
+                <strong>${p.nome}</strong>
+              </div>
+            </td>
+            <td class="num">${formatBRL(cTotal)}</td>
+            <td class="num" style="font-weight: 700;">${formatBRL(preco)}</td>
+            <td class="num" style="color: #923456;">
+              -${formatBRL(res.totalTaxas)}
+              <div style="font-size: 0.72rem; color: var(--text-muted);">${res.descRule}</div>
+            </td>
+            <td class="num" style="font-weight: 700; color: ${isNeg ? '#C02626' : '#166A3D'};">${formatBRL(res.lucro)}</td>
+            <td class="num">
+              <span class="badge-pill ${isNeg ? 'negative-profit' : 'badge-profit'}">${res.margem.toFixed(1)}%</span>
+            </td>
+            <td>
+              ${isNeg 
+                ? '<span style="color: #C02626; font-size: 0.8rem; font-weight: 700;">🚨 Prejuízo</span>' 
+                : (isHealthy 
+                    ? '<span style="color: #166A3D; font-size: 0.8rem; font-weight: 600;">✨ Lucrativo</span>' 
+                    : '<span style="color: #B45309; font-size: 0.8rem; font-weight: 600;">⚠️ Margem Baixa</span>')}
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    // -------------------------------------------------------------
+    // PRODUTOS (Cards Grid)
+    // -------------------------------------------------------------
+    function renderProductCards() {
+      const container = document.getElementById("product-cards-container");
+      if (!container) return;
+
+      container.innerHTML = state.products.map(p => {
+        const cTotal = getProductCustoTotal(p);
+        const preco = Number(p.preco) || 0;
+        const lucro = preco - cTotal;
+        const margem = preco > 0 ? ((lucro / preco) * 100).toFixed(1) : "0.0";
+        const isNeg = lucro < 0;
+
+        let imgHtml;
+        if (p.foto) {
+          imgHtml = `<img src="${p.foto}" alt="${p.nome}">`;
+        } else {
+          const query = encodeURIComponent(p.imgQuery || "stationery pastel craft");
+          const imgUrl = `https://img.usecurling.com/p/400/260?q=${query}&color=pink`;
+          imgHtml = `<img src="${imgUrl}" alt="${p.nome}" loading="lazy">`;
+        }
+
+        const matCount = (p.materiasPrimas || []).length;
+
+        return `
+          <div class="cute-card" style="padding: 1.15rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <div class="product-card-thumb">
+                ${imgHtml}
+              </div>
+              <h3 style="font-size: 1.05rem; margin: 0 0 0.4rem 0; color: #5B4B7A; font-weight: 700;">${p.nome}</h3>
+              
+              <div style="display: flex; gap: 0.35rem; margin-bottom: 0.75rem; flex-wrap: wrap;">
+                ${p.platforms.includes("tt") ? '<span class="badge-pill badge-tiktok">TikTok</span>' : ''}
+                ${p.platforms.includes("ml") ? '<span class="badge-pill badge-ml">MLivre</span>' : ''}
+                ${p.platforms.includes("shopee") ? '<span class="badge-pill badge-shopee">Shopee</span>' : ''}
+                ${p.platforms.includes("kwai") ? '<span class="badge-pill badge-kwai">Kwai</span>' : ''}
+              </div>
+
+              <div style="background: #FFF5F9; border-radius: 14px; padding: 0.75rem; margin-bottom: 0.85rem; border: 1px solid #F8E2ED; font-size: 0.82rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <span style="color: var(--text-muted);">Matérias-Primas (${matCount}):</span>
+                  <b>${formatBRL(getProductCustoMaterias(p))}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <span style="color: var(--text-muted);">Embalagem + Outros:</span>
+                  <b>${formatBRL((Number(p.custoEmbalagem) || 0) + (Number(p.outrosCustos) || 0))}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem; font-weight:700; color:#5B4B7A;">
+                  <span>Custo Total:</span>
+                  <b>${formatBRL(cTotal)}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                  <span style="color: var(--text-muted);">Preço de Venda:</span>
+                  <b style="color: #923456;">${formatBRL(preco)}</b>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-weight: 700; color: ${isNeg ? '#C02626' : '#166A3D'}; border-top: 1px dashed #F5C6DA; padding-top: 0.35rem; margin-top: 0.2rem;">
+                  <span>Lucro Bruto:</span>
+                  <span>${formatBRL(lucro)} (${margem}%)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+              <button class="btn-cute-outline" style="padding: 0.35rem 0.75rem; font-size: 0.78rem;" onclick="openEditProductModal(${p.id})">Editar 🌸</button>
+              <button class="btn-cute-outline" style="padding: 0.35rem 0.65rem; font-size: 0.78rem; color: #C02626; border-color: #FECACA;" onclick="deleteProduct(${p.id})">🗑️</button>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    // -------------------------------------------------------------
+    // DYNAMIC MATERIALS & PRODUCT MODAL (MUDANÇA 2)
+    // -------------------------------------------------------------
+    let currentModalMaterials = [];
+
+    function addMaterialRow(mat = { material: "", valorUnitario: 0, quantidade: 1 }) {
+      currentModalMaterials.push({
+        material: mat.material || "",
+        valorUnitario: parseNumberInput(mat.valorUnitario),
+        quantidade: mat.quantidade !== undefined ? parseNumberInput(mat.quantidade) : 1
+      });
+      renderModalMaterialsTable();
+      recalcModalMaterials();
+    }
+
+    function removeMaterialRow(idx) {
+      if (currentModalMaterials.length <= 1) {
+        // Keep at least one row, just clear it
+        currentModalMaterials[0] = { material: "", valorUnitario: 0, quantidade: 1 };
+      } else {
+        currentModalMaterials.splice(idx, 1);
+      }
+      renderModalMaterialsTable();
+      recalcModalMaterials();
+    }
+
+    function updateMaterialField(idx, field, val) {
+      if (!currentModalMaterials[idx]) return;
+      if (field === "material") {
+        currentModalMaterials[idx].material = val;
+      } else {
+        currentModalMaterials[idx][field] = parseNumberInput(val);
+      }
+      // Update subtotal display for that row directly without breaking focus
+      const subEl = document.getElementById(`mat-subtotal-${idx}`);
+      if (subEl) {
+        const vu = parseNumberInput(currentModalMaterials[idx].valorUnitario);
+        const qtd = parseNumberInput(currentModalMaterials[idx].quantidade);
+        subEl.innerText = formatBRL(vu * qtd);
+      }
+      recalcModalMaterials();
+    }
+
+    function renderModalMaterialsTable() {
+      const tbody = document.getElementById("mat-table-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = currentModalMaterials.map((m, idx) => {
+        const vu = parseNumberInput(m.valorUnitario);
+        const qtd = parseNumberInput(m.quantidade);
+        const sub = vu * qtd;
+        return `
+          <tr>
+            <td>
+              <input type="text" class="cute-input" style="padding: 5px 8px; font-size: 0.85rem;" placeholder="ex: Papel offset 180g" value="${escapeHtml(m.material)}" oninput="updateMaterialField(${idx}, 'material', this.value)">
+            </td>
+            <td>
+              <input type="number" step="any" min="0" inputmode="decimal" class="cute-input" style="padding: 5px 8px; font-size: 0.85rem; font-weight: 600;" placeholder="0.00" value="${vu}" onkeydown="handleDecimalKeyDown(event)" oninput="updateMaterialField(${idx}, 'valorUnitario', this.value)">
+            </td>
+            <td>
+              <input type="number" step="any" min="0" inputmode="decimal" class="cute-input" style="padding: 5px 8px; font-size: 0.85rem; font-weight: 600;" placeholder="1" value="${qtd}" onkeydown="handleDecimalKeyDown(event)" oninput="updateMaterialField(${idx}, 'quantidade', this.value)">
+            </td>
+            <td style="text-align: right;">
+              <span class="mat-subtotal" id="mat-subtotal-${idx}">${formatBRL(sub)}</span>
+            </td>
+            <td style="text-align: center;">
+              <button type="button" style="background: none; border: none; cursor: pointer; color: #C02626; font-size: 1.05rem;" title="Remover material" onclick="removeMaterialRow(${idx})">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function recalcModalMaterials() {
+      // 1. Custo das matérias-primas
+      const custoMat = currentModalMaterials.reduce((acc, m) => {
+        const vu = parseNumberInput(m.valorUnitario);
+        const qtd = parseNumberInput(m.quantidade);
+        return acc + (vu * qtd);
+      }, 0);
+
+      // 2. Embalagem e outros
+      const emb = parseNumberInput(document.getElementById("prod-custo-embalagem").value);
+      const outros = parseNumberInput(document.getElementById("prod-outros-custos").value);
+
+      // 3. Custo total
+      const custoTotal = custoMat + emb + outros;
+      const precoVenda = parseNumberInput(document.getElementById("prod-preco").value);
+
+      const lucroBruto = precoVenda - custoTotal;
+      const margemBruta = precoVenda > 0 ? ((lucroBruto / precoVenda) * 100).toFixed(1) : "0.0";
+      const isNeg = lucroBruto < 0;
+
+      // Update summaries
+      const sumMatEl = document.getElementById("modal-sum-mat");
+      const sumEmbEl = document.getElementById("modal-sum-emb");
+      const sumOutrosEl = document.getElementById("modal-sum-outros");
+      const sumTotalEl = document.getElementById("modal-sum-custo-total");
+      const prevLucroEl = document.getElementById("modal-prev-lucro");
+      const prevMargemEl = document.getElementById("modal-prev-margem");
+
+      if (sumMatEl) sumMatEl.innerText = formatBRL(custoMat);
+      if (sumEmbEl) sumEmbEl.innerText = formatBRL(emb);
+      if (sumOutrosEl) sumOutrosEl.innerText = formatBRL(outros);
+      if (sumTotalEl) sumTotalEl.innerText = formatBRL(custoTotal);
+
+      if (prevLucroEl) {
+        prevLucroEl.innerText = formatBRL(lucroBruto);
+        prevLucroEl.style.color = isNeg ? '#C02626' : '#166A3D';
+      }
+      if (prevMargemEl) {
+        prevMargemEl.innerText = margemBruta + "%";
+        if (isNeg) {
+          prevMargemEl.className = "badge-pill negative-profit";
+        } else {
+          prevMargemEl.className = "badge-pill badge-profit";
+        }
+      }
+    }
+
+    // Photo Upload Handler (FileReader -> base64)
+    function handlePhotoUpload(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const base64 = e.target.result;
+        setModalPhotoPreview(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function setModalPhotoPreview(base64Url) {
+      const inputHidden = document.getElementById("prod-foto-base64");
+      const imgTag = document.getElementById("img-preview-tag");
+      const emoji = document.getElementById("img-placeholder-emoji");
+      const btnRemover = document.getElementById("btn-remover-foto");
+
+      inputHidden.value = base64Url || "";
+      if (base64Url) {
+        imgTag.src = base64Url;
+        imgTag.style.display = "block";
+        emoji.style.display = "none";
+        btnRemover.style.display = "inline-flex";
+      } else {
+        imgTag.src = "";
+        imgTag.style.display = "none";
+        emoji.style.display = "block";
+        btnRemover.style.display = "none";
+      }
+    }
+
+    function removeProductPhoto() {
+      document.getElementById("prod-foto-input").value = "";
+      setModalPhotoPreview(null);
+    }
+
+    function openProductModal() {
+      document.getElementById("modal-prod-title").innerText = "Adicionar Novo Produto 💖";
+      document.getElementById("prod-id").value = "";
+      document.getElementById("prod-nome").value = "";
+      document.getElementById("prod-preco").value = "";
+      document.getElementById("prod-custo-embalagem").value = "1.50";
+      document.getElementById("prod-outros-custos").value = "1.00";
+      document.getElementById("check-tt").checked = true;
+      document.getElementById("check-ml").checked = true;
+      document.getElementById("check-sh").checked = true;
+      document.getElementById("check-kw").checked = true;
+      setModalPhotoPreview(null);
+
+      // Default with 2 sample material lines for ease of use
+      currentModalMaterials = [
+        { material: "Papel offset 180g", valorUnitario: 0.80, quantidade: 5 },
+        { material: "Lamino protetor fosco", valorUnitario: 1.50, quantidade: 1 }
+      ];
+      renderModalMaterialsTable();
+      recalcModalMaterials();
+      document.getElementById("modal-produto").classList.add("open");
+    }
+
+    function openEditProductModal(id) {
+      const p = state.products.find(item => item.id == id);
+      if (!p) return;
+
+      document.getElementById("modal-prod-title").innerText = "Editar Produto 🌸";
+      document.getElementById("prod-id").value = p.id;
+      document.getElementById("prod-nome").value = p.nome || "";
+      document.getElementById("prod-preco").value = p.preco || "";
+      document.getElementById("prod-custo-embalagem").value = (p.custoEmbalagem !== undefined) ? p.custoEmbalagem : 0;
+      document.getElementById("prod-outros-custos").value = (p.outrosCustos !== undefined) ? p.outrosCustos : 0;
+
+      document.getElementById("check-tt").checked = p.platforms.includes("tt");
+      document.getElementById("check-ml").checked = p.platforms.includes("ml");
+      document.getElementById("check-sh").checked = p.platforms.includes("shopee");
+      document.getElementById("check-kw").checked = p.platforms.includes("kwai");
+
+      setModalPhotoPreview(p.foto || null);
+
+      if (p.materiasPrimas && p.materiasPrimas.length > 0) {
+        currentModalMaterials = p.materiasPrimas.map(m => ({
+          material: m.material || "",
+          valorUnitario: parseNumberInput(m.valorUnitario),
+          quantidade: m.quantidade !== undefined ? parseNumberInput(m.quantidade) : 1
+        }));
+      } else {
+        currentModalMaterials = [
+          { material: "Insumo principal", valorUnitario: parseNumberInput(p.custo), quantidade: 1 }
+        ];
+      }
+
+      renderModalMaterialsTable();
+      recalcModalMaterials();
+      document.getElementById("modal-produto").classList.add("open");
+    }
+
+    function closeProductModal() {
+      document.getElementById("modal-produto").classList.remove("open");
+    }
+
+    function handleSaveProduct(e) {
+      e.preventDefault();
+      const idVal = document.getElementById("prod-id").value;
+      const nome = document.getElementById("prod-nome").value.trim();
+      const preco = parseNumberInput(document.getElementById("prod-preco").value);
+      const custoEmbalagem = parseNumberInput(document.getElementById("prod-custo-embalagem").value);
+      const outrosCustos = parseNumberInput(document.getElementById("prod-outros-custos").value);
+      const foto = document.getElementById("prod-foto-base64").value || null;
+
+      const platforms = [];
+      if (document.getElementById("check-tt").checked) platforms.push("tt");
+      if (document.getElementById("check-ml").checked) platforms.push("ml");
+      if (document.getElementById("check-sh").checked) platforms.push("shopee");
+      if (document.getElementById("check-kw").checked) platforms.push("kwai");
+
+      // Filter out completely empty material lines and preserve decimals
+      const cleanMaterials = currentModalMaterials
+        .filter(m => (m.material || "").trim() !== "" || parseNumberInput(m.valorUnitario) > 0 || parseNumberInput(m.quantidade) > 0)
+        .map(m => ({
+          material: m.material || "Insumo",
+          valorUnitario: parseNumberInput(m.valorUnitario),
+          quantidade: parseNumberInput(m.quantidade)
+        }));
+
+      if (cleanMaterials.length === 0) {
+        cleanMaterials.push({ material: "Geral", valorUnitario: 0, quantidade: 1 });
+      }
+
+      if (idVal) {
+        const prod = state.products.find(item => item.id == idVal);
+        if (prod) {
+          prod.nome = nome;
+          prod.preco = preco;
+          prod.custoEmbalagem = custoEmbalagem;
+          prod.outrosCustos = outrosCustos;
+          prod.materiasPrimas = cleanMaterials;
+          prod.platforms = platforms;
+          prod.foto = foto;
+        }
+      } else {
+        const newId = Date.now();
+        state.products.push({
+          id: newId,
+          nome,
+          preco,
+          custoEmbalagem,
+          outrosCustos,
+          materiasPrimas: cleanMaterials,
+          platforms,
+          foto,
+          imgQuery: nome.toLowerCase().includes("bts") ? "bts photo card cute" : "cute stationery stickers"
+        });
+      }
+
+      saveState();
+      closeProductModal();
+      refreshAllViews();
+    }
+
+    function deleteProduct(id) {
+      const prod = state.products.find(p => p.id == id);
+      const nome = prod ? `"${prod.nome}"` : "este mimo";
+      if (confirm(`Tem certeza que deseja excluir ${nome}? Todos os cálculos serão atualizados.`)) {
+        state.products = state.products.filter(p => p.id != id);
+        saveState();
+        refreshAllViews();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // PROMOÇÕES
+    // -------------------------------------------------------------
+    function renderPromotionsTable() {
+      const tbody = document.getElementById("table-promocoes-body");
+      if (!tbody) return;
+
+      tbody.innerHTML = state.promotions.map(promo => {
+        const descVal = promo.precoNormal - promo.precoPromo;
+        const descPct = promo.precoNormal > 0 ? ((descVal / promo.precoNormal) * 100).toFixed(0) : 0;
+
+        let badgePlatClass = "badge-tiktok";
+        if (promo.canal === "Mercado Livre") badgePlatClass = "badge-ml";
+        if (promo.canal === "Shopee") badgePlatClass = "badge-shopee";
+        if (promo.canal === "Kwai Shop") badgePlatClass = "badge-kwai";
+
+        return `
+          <tr>
+            <td><strong>${promo.mes}</strong></td>
+            <td>${promo.prodNome}</td>
+            <td><span class="badge-pill ${badgePlatClass}">${promo.canal}</span></td>
+            <td class="num" style="text-decoration: line-through; color: var(--text-muted);">${formatBRL(promo.precoNormal)}</td>
+            <td class="num" style="font-weight: 700; color: #923456;">${formatBRL(promo.precoPromo)}</td>
+            <td class="num">
+              <span class="badge-pill badge-profit" style="background: #FFE8DF; color: #8F3316; border-color: #FFCEBE;">
+                -${descPct}%
+              </span>
+            </td>
+            <td style="font-size: 0.82rem; color: var(--text-muted);">${promo.dataInicio} até ${promo.dataFim}</td>
+            <td style="text-align: center;">
+              <button class="btn-cute-outline" style="padding: 2px 8px; font-size: 0.75rem; color: #C02626;" onclick="deletePromotion(${promo.id})">Excluir</button>
+            </td>
+          </tr>
+        `;
+      }).join("");
+    }
+
+    function openPromoModal() {
+      const select = document.getElementById("promo-prod-select");
+      select.innerHTML = state.products.map(p => `<option value="${p.id}">${p.nome}</option>`).join("");
+      if (state.products.length > 0) {
+        syncPromoNormalPrice(state.products[0].id);
+      }
+      document.getElementById("promo-mes").value = "";
+      document.getElementById("promo-data-inicio").value = new Date().toISOString().split("T")[0];
+      const nextWeek = new Date();
+      nextWeek.setDate(nextWeek.getDate() + 14);
+      document.getElementById("promo-data-fim").value = nextWeek.toISOString().split("T")[0];
+      document.getElementById("modal-promo").classList.add("open");
+    }
+
+    function closePromoModal() {
+      document.getElementById("modal-promo").classList.remove("open");
+    }
+
+    function syncPromoNormalPrice(prodId) {
+      const prod = state.products.find(p => p.id == prodId);
+      if (prod) {
+        document.getElementById("promo-preco-normal").value = prod.preco;
+        document.getElementById("promo-preco-promo").value = (prod.preco * 0.85).toFixed(2);
+        calcPromoDiscountPreview();
+      }
+    }
+
+    function calcPromoDiscountPreview() {
+      const normal = parseNumberInput(document.getElementById("promo-preco-normal").value);
+      const promo = parseNumberInput(document.getElementById("promo-preco-promo").value);
+      if (normal > 0 && promo <= normal) {
+        const pct = (((normal - promo) / normal) * 100).toFixed(1);
+        document.getElementById("promo-prev-desc").innerText = `${pct}% OFF (Economia de ${formatBRL(normal - promo)})`;
+      } else {
+        document.getElementById("promo-prev-desc").innerText = "Preço promocional deve ser menor que o normal";
+      }
+    }
+
+    function handleSavePromo(e) {
+      e.preventDefault();
+      const mes = document.getElementById("promo-mes").value.trim();
+      const prodId = document.getElementById("promo-prod-select").value;
+      const prod = state.products.find(p => p.id == prodId);
+      const precoNormal = parseNumberInput(document.getElementById("promo-preco-normal").value);
+      const precoPromo = parseNumberInput(document.getElementById("promo-preco-promo").value);
+      const dataInicio = document.getElementById("promo-data-inicio").value;
+      const dataFim = document.getElementById("promo-data-fim").value;
+      const canal = document.getElementById("promo-canal").value;
+
+      state.promotions.push({
+        id: Date.now(),
+        mes,
+        produtoId: prodId,
+        prodNome: prod ? prod.nome : "Item",
+        precoNormal,
+        precoPromo,
+        dataInicio,
+        dataFim,
+        canal
+      });
+
+      saveState();
+      closePromoModal();
+      renderPromotionsTable();
+    }
+
+    function deletePromotion(id) {
+      if (confirm("Remover esta promoção?")) {
+        state.promotions = state.promotions.filter(p => p.id != id);
+        saveState();
+        renderPromotionsTable();
+      }
+    }
+
+    // -------------------------------------------------------------
+    // BACKUP & RESTORE FUNCTIONALITY (COMPLETA E ROBUSTA)
+    // -------------------------------------------------------------
+    let pendingBackupData = null;
+
+    function showBackupFeedback(message, type = "success") {
+      const container = document.getElementById("backup-toast-container");
+      if (!container) return;
+
+      const alertDiv = document.createElement("div");
+      alertDiv.className = type === "success" ? "backup-alert-success" : "backup-alert-error";
+      alertDiv.innerHTML = `
+        <span>${type === "success" ? "🌸" : "⚠️"}</span>
+        <span style="flex:1;">${escapeHtml(message)}</span>
+      `;
+
+      container.innerHTML = "";
+      container.appendChild(alertDiv);
+
+      // Shell toast integration fallback
+      if (window.skipUI && window.skipUI.toast) {
+        window.skipUI.toast(message, { type: type === "success" ? "success" : "error" });
+      }
+
+      setTimeout(() => {
+        if (alertDiv.parentNode === container) {
+          alertDiv.remove();
+        }
+      }, 6000);
+    }
+
+    function updateBackupStats() {
+      const pCount = state.products ? state.products.length : 0;
+      const promoCount = state.promotions ? state.promotions.length : 0;
+      const taxesCount = state.taxes ? Object.keys(state.taxes).length : 4;
+
+      const resumoEl = document.getElementById("backup-resumo-dinamico");
+      if (resumoEl) {
+        resumoEl.innerText = `${pCount} produtos · ${promoCount} promoções · ${taxesCount} taxas salvas`;
+      }
+    }
+
+    function exportBackup() {
+      const btn = document.getElementById("btn-export-backup");
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳</span> Gerando backup...`;
+      }
+
+      setTimeout(() => {
+        try {
+          const now = new Date();
+          const iso = now.toISOString();
+
+          // Formatação pt-BR amigável: DD/MM/AAAA às HH:mm
+          const dia = String(now.getDate()).padStart(2, '0');
+          const mes = String(now.getMonth() + 1).padStart(2, '0');
+          const ano = now.getFullYear();
+          const horas = String(now.getHours()).padStart(2, '0');
+          const mins = String(now.getMinutes()).padStart(2, '0');
+          const dataFormatada = `${dia}/${mes}/${ano} às ${horas}:${mins}`;
+
+          const pCount = state.products ? state.products.length : 0;
+          const promoCount = state.promotions ? state.promotions.length : 0;
+          const taxesCount = state.taxes ? Object.keys(state.taxes).length : 4;
+
+          // Coleta de todo o localStorage para garantir backup completo e seguro
+          const rawLocalStorage = {};
+          for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            rawLocalStorage[key] = localStorage.getItem(key);
+          }
+
+          // Garante que o estado em memória também está salvo
+          saveState();
+          rawLocalStorage["j4y_products"] = JSON.stringify(state.products);
+          rawLocalStorage["j4y_tax_rules"] = JSON.stringify(state.taxes);
+          rawLocalStorage["j4y_promotions"] = JSON.stringify(state.promotions);
+
+          const backupPayload = {
+            app: "J4Y",
+            versao: "1.0",
+            dataExportacao: iso,
+            dataFormatada: dataFormatada,
+            resumo: {
+              produtos: pCount,
+              promocoes: promoCount,
+              taxas: taxesCount
+            },
+            dados: rawLocalStorage
+          };
+
+          const jsonString = JSON.stringify(backupPayload, null, 2);
+          const blob = new Blob([jsonString], { type: "application/json;charset=utf-8" });
+          const url = URL.createObjectURL(blob);
+
+          const fileName = `j4y-backup-${ano}-${mes}-${dia}-${horas}${mins}.json`;
+
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = fileName;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+
+          showBackupFeedback(`Backup exportado com sucesso! Arquivo: ${fileName}`, "success");
+        } catch (err) {
+          console.error("Erro na exportação de backup:", err);
+          showBackupFeedback(`Falha ao exportar backup: ${err.message}`, "error");
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<span>⬇️</span> Baixar backup (.json)`;
+          }
+        }
+      }, 250);
+    }
+
+    function handleBackupFileSelect(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const content = e.target.result;
+          const json = JSON.parse(content);
+
+          // Validação obrigatória da aplicação
+          if (!json || json.app !== "J4Y" || !json.dados) {
+            throw new Error("Arquivo inválido. O arquivo selecionado não é um backup oficial do J4Y.");
+          }
+
+          pendingBackupData = json;
+
+          // Preenchimento do preview de restauração
+          const prevBox = document.getElementById("backup-preview-box");
+          const prevDate = document.getElementById("import-prev-date");
+          const prevVer = document.getElementById("import-prev-version");
+          const prevCounts = document.getElementById("import-prev-counts");
+
+          prevVer.innerText = json.versao || "1.0";
+          prevDate.innerText = json.dataFormatada || json.dataExportacao || "Desconhecida";
+
+          let prodCount = 0;
+          let promoCount = 0;
+
+          if (json.resumo) {
+            prodCount = json.resumo.produtos || 0;
+            promoCount = json.resumo.promocoes || 0;
+          } else if (json.dados["j4y_products"]) {
+            try {
+              const parsedP = JSON.parse(json.dados["j4y_products"]);
+              prodCount = Array.isArray(parsedP) ? parsedP.length : 0;
+            } catch(e) {}
+          }
+
+          prevCounts.innerText = `${prodCount} produtos cadastrados, ${promoCount} promoções planejadas`;
+          prevBox.style.display = "block";
+          prevBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+          showBackupFeedback("Arquivo de backup verificado com sucesso. Confira o resumo antes de restaurar.", "success");
+        } catch (err) {
+          console.error("Erro ao validar arquivo de backup:", err);
+          pendingBackupData = null;
+          document.getElementById("backup-preview-box").style.display = "none";
+          showBackupFeedback(err.message || "Não foi possível ler o arquivo de backup.", "error");
+        } finally {
+          event.target.value = "";
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function cancelBackupRestore() {
+      pendingBackupData = null;
+      const prevBox = document.getElementById("backup-preview-box");
+      if (prevBox) prevBox.style.display = "none";
+      showBackupFeedback("Restauração de backup cancelada.", "error");
+    }
+
+    function confirmBackupRestore() {
+      if (!pendingBackupData || !pendingBackupData.dados) {
+        showBackupFeedback("Nenhum dado válido para restaurar.", "error");
+        return;
+      }
+
+      const btn = document.getElementById("btn-confirm-restore");
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = `<span>⏳</span> Restaurando dados...`;
+      }
+
+      setTimeout(() => {
+        try {
+          const dados = pendingBackupData.dados;
+
+          // Limpa chaves anteriores para evitar poluição e restaura chaves do backup
+          localStorage.clear();
+          Object.keys(dados).forEach(key => {
+            localStorage.setItem(key, dados[key]);
+          });
+
+          // Recarrega o estado interno do app usando os dados do backup
+          state.products = migrateProducts(JSON.parse(localStorage.getItem("j4y_products")));
+          state.taxes = loadSavedTaxSettings();
+          state.promotions = JSON.parse(localStorage.getItem("j4y_promotions")) || INITIAL_PROMOTIONS;
+
+          // Atualiza inputs visuais de taxas
+          const ttSfpActive = document.getElementById("tax-tt-sfp-active");
+          const ttSfpPct = document.getElementById("tax-tt-sfp-pct");
+          const mlComissao = document.getElementById("tax-ml-comissao");
+          const mlFrete = document.getElementById("tax-ml-frete");
+
+          if (ttSfpActive) ttSfpActive.checked = state.taxes.tiktok.sfpActive;
+          if (ttSfpPct) ttSfpPct.value = state.taxes.tiktok.sfpPct;
+          if (mlComissao) mlComissao.value = state.taxes.ml.comissao;
+          if (mlFrete) mlFrete.value = state.taxes.ml.frete;
+
+          // Atualiza todas as telas
+          refreshAllViews();
+
+          // Oculta preview
+          document.getElementById("backup-preview-box").style.display = "none";
+          pendingBackupData = null;
+
+          showBackupFeedback("Backup restaurado com sucesso! Todos os seus produtos, fotos e taxas estão ativos.", "success");
+        } catch (err) {
+          console.error("Erro na restauração de backup:", err);
+          showBackupFeedback(`Erro ao restaurar backup: ${err.message}`, "error");
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<span>✅</span> Confirmar e restaurar`;
+          }
+        }
+      }, 300);
+    }
+
+    function handleDangerInputChange(val) {
+      const btn = document.getElementById("btn-danger-wipe");
+      if (btn) {
+        btn.disabled = val.trim() !== "APAGAR";
+      }
+    }
+
+    function executeDangerWipe() {
+      const input = document.getElementById("danger-confirm-input");
+      if (!input || input.value.trim() !== "APAGAR") return;
+
+      const btn = document.getElementById("btn-danger-wipe");
+      btn.disabled = true;
+      btn.innerHTML = `<span>⏳</span> Apagando...`;
+
+      setTimeout(() => {
+        try {
+          // Limpa chaves do J4Y e localStorage
+          localStorage.removeItem("j4y_products");
+          localStorage.removeItem("j4y_tax_rules");
+          localStorage.removeItem("j4y_promotions");
+          localStorage.clear();
+
+          // Reinicializa o estado com listas vazias
+          state.products = [];
+          state.promotions = [];
+          state.taxes = JSON.parse(JSON.stringify(INITIAL_TAX_SETTINGS));
+
+          saveState();
+          refreshAllViews();
+
+          input.value = "";
+          btn.disabled = true;
+          btn.innerHTML = `<span>🗑️</span> Apagar todos os dados`;
+
+          showBackupFeedback("Todos os dados foram apagados deste navegador com sucesso.", "error");
+        } catch (err) {
+          console.error("Erro ao apagar dados:", err);
+          showBackupFeedback("Ocorreu um erro ao limpar os dados.", "error");
+        }
+      }, 300);
+    }
+
+    // -------------------------------------------------------------
+    // GLOBAL REFRESH
+    // -------------------------------------------------------------
+    function refreshAllViews() {
+      populateCalcSelect();
+      renderDashboard();
+      renderPrecificacaoTable();
+      recalcLiveSimulator();
+      renderPlatformTable();
+      renderProductCards();
+      renderPromotionsTable();
+      updateBackupStats();
+    }
+
+    // Initialize on DOM Ready
+    document.addEventListener("DOMContentLoaded", () => {
+      // Set tax inputs with stored values
+      const ttSfpActive = document.getElementById("tax-tt-sfp-active");
+      const ttSfpPct = document.getElementById("tax-tt-sfp-pct");
+      const mlComissao = document.getElementById("tax-ml-comissao");
+      const mlFrete = document.getElementById("tax-ml-frete");
+
+      if (ttSfpActive) ttSfpActive.checked = state.taxes.tiktok.sfpActive;
+      if (ttSfpPct) ttSfpPct.value = state.taxes.tiktok.sfpPct;
+      if (mlComissao) mlComissao.value = state.taxes.ml.comissao;
+      if (mlFrete) mlFrete.value = state.taxes.ml.frete;
+
+      refreshAllViews();
+    });
+  </script>
+<script>
+/* Skip artifact shell — fixed helpers served beside every artifact. */
+(function () {
+  "use strict";
+
+  var fmt = {
+    num: function (v, opts) { return new Intl.NumberFormat("pt-BR", opts || {}).format(v); },
+    brl: function (v) { return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v); },
+    pct: function (v) { return new Intl.NumberFormat("pt-BR", { style: "percent", maximumFractionDigits: 1 }).format(v); }
+  };
+
+  // axisFmt keeps axis tick labels short (compact notation) so long values
+  // (e.g. full BRL amounts) never clip against the plot edge.
+  function axisFmt(v) {
+    return fmt.num(v, { notation: "compact", maximumFractionDigits: 1 });
+  }
+
+  // format accepts a function OR one of the fmt names ("num" | "brl" | "pct").
+  function coerceFormat(spec) {
+    if (typeof spec === "function") return spec;
+    if (typeof spec === "string" && fmt[spec]) return fmt[spec];
+    return function (v) { return fmt.num(v); };
+  }
+
+  function accent() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#2563eb";
+  }
+  function mutedColor() {
+    return getComputedStyle(document.documentElement).getPropertyValue("--text-muted").trim() || "#5b6472";
+  }
+  function svgEl(tag, attrs) {
+    var el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+    for (var k in attrs) el.setAttribute(k, attrs[k]);
+    return el;
+  }
+  function frame(el, w, h) {
+    var svg = svgEl("svg", { viewBox: "0 0 " + w + " " + h, role: "img" });
+    el = resolve(el);
+    el.innerHTML = "";
+    el.appendChild(svg);
+    return svg;
+  }
+
+  // maxOf guards the axis scale: empty values would give -Infinity (truthy,
+  // so "|| 1" can't catch it) and a non-positive max would flip the chart.
+  function maxOf(values) {
+    var m = values.length ? Math.max.apply(null, values) : 0;
+    return m > 0 ? m : 1;
+  }
+
+  // bar(el, {labels:[], values:[], color?, format?}) — vertical bar chart.
+  function bar(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 12, plotH = H - padT - padB;
+    var step = plotW / n, bw = Math.min(step * 0.62, 64);
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 12, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    cfg.values.forEach(function (v, i) {
+      var bh = Math.max(0, (v / max) * plotH);
+      var x = padL + i * step + (step - bw) / 2;
+      var y = padT + plotH - bh;
+      var r = svgEl("rect", { x: x, y: y, width: bw, height: bh, rx: 4, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(v);
+      r.appendChild(t);
+      svg.appendChild(r);
+      var tx = svgEl("text", { x: x + bw / 2, y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // line(el, {labels:[], values:[], color?, format?}) — single-series line.
+  function line(el, cfg) {
+    var W = 640, H = 280, padL = 46, padB = 30, padT = 12;
+    var svg = frame(el, W, H);
+    var max = maxOf(cfg.values);
+    var n = cfg.values.length;
+    var plotW = W - padL - 16, plotH = H - padT - padB;
+    var color = cfg.color || accent();
+    var f = coerceFormat(cfg.format);
+    for (var g = 0; g <= 4; g++) {
+      var gy = padT + plotH - (plotH * g) / 4;
+      svg.appendChild(svgEl("line", { x1: padL, y1: gy, x2: W - 16, y2: gy, stroke: "currentColor", "stroke-opacity": 0.08 }));
+      var lbl = svgEl("text", { x: padL - 8, y: gy + 4, "text-anchor": "end", "font-size": 10, fill: mutedColor() });
+      lbl.textContent = axisFmt((max * g) / 4);
+      svg.appendChild(lbl);
+    }
+    var pts = cfg.values.map(function (v, i) {
+      var x = padL + (n === 1 ? plotW / 2 : (plotW * i) / (n - 1));
+      var y = padT + plotH - (v / max) * plotH;
+      return [x, y];
+    });
+    var d = pts.map(function (p, i) { return (i ? "L" : "M") + p[0].toFixed(1) + " " + p[1].toFixed(1); }).join(" ");
+    svg.appendChild(svgEl("path", { d: d, fill: "none", stroke: color, "stroke-width": 2, "stroke-linejoin": "round" }));
+    pts.forEach(function (p, i) {
+      var c = svgEl("circle", { cx: p[0], cy: p[1], r: 3.5, fill: color });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + f(cfg.values[i]);
+      c.appendChild(t);
+      svg.appendChild(c);
+      var tx = svgEl("text", { x: p[0], y: H - 10, "text-anchor": "middle", "font-size": 11, fill: mutedColor() });
+      tx.textContent = cfg.labels[i];
+      svg.appendChild(tx);
+    });
+  }
+
+  // donut(el, {labels:[], values:[], colors?}) — donut with center total.
+  function donut(el, cfg) {
+    var W = 320, H = 280, cx = W / 2, cy = H / 2, R = 92, r = 58;
+    var svg = frame(el, W, H);
+    // At 100% of a wide container the donut outgrows the height pages give
+    // the box and spills over the next section: keep it at its own size.
+    svg.style.maxWidth = W + "px";
+    svg.style.margin = "0 auto";
+    var total = cfg.values.reduce(function (a, b) { return a + b; }, 0) || 1;
+    var palette = cfg.colors || [accent(), "#1baf7a", "#eda100", "#e34948", "#4a3aa7", "#e87ba4"];
+    var a0 = -Math.PI / 2;
+    cfg.values.forEach(function (v, i) {
+      var a1 = a0 + (v / total) * Math.PI * 2;
+      var large = a1 - a0 > Math.PI ? 1 : 0;
+      var p = ["M", cx + R * Math.cos(a0), cy + R * Math.sin(a0),
+        "A", R, R, 0, large, 1, cx + R * Math.cos(a1), cy + R * Math.sin(a1),
+        "L", cx + r * Math.cos(a1), cy + r * Math.sin(a1),
+        "A", r, r, 0, large, 0, cx + r * Math.cos(a0), cy + r * Math.sin(a0), "Z"].join(" ");
+      var path = svgEl("path", { d: p, fill: palette[i % palette.length] });
+      var t = svgEl("title", {});
+      t.textContent = cfg.labels[i] + ": " + fmt.num(v) + " (" + fmt.pct(v / total) + ")";
+      path.appendChild(t);
+      svg.appendChild(path);
+      a0 = a1;
+    });
+    var center = svgEl("text", { x: cx, y: cy + 5, "text-anchor": "middle", "font-size": 20, "font-weight": 650, fill: "currentColor" });
+    center.textContent = fmt.num(total);
+    svg.appendChild(center);
+  }
+
+  // ---- Page building blocks: what dashboards and small systems kept
+  // re-implementing — a searchable sortable table, a KPI row, tabs, toasts,
+  // dialogs, saved state and mock data. Every call is opt-in, so a page that
+  // brings its own versions keeps them.
+
+  function resolve(target) {
+    return typeof target === "string" ? document.querySelector(target) : target;
+  }
+
+  function node(tag, className, text) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text != null) el.textContent = text;
+    return el;
+  }
+
+  function isNumberColumn(col) {
+    return col.align === "right" || col.format === "num" || col.format === "brl" || col.format === "pct";
+  }
+
+  function cellText(col, row) {
+    var value = row[col.key];
+    if (value == null) return "";
+    return col.format ? coerceFormat(col.format)(value) : String(value);
+  }
+
+  function compareValues(a, b) {
+    if (typeof a === "number" && typeof b === "number") return a - b;
+    return String(a == null ? "" : a).localeCompare(String(b == null ? "" : b), "pt-BR", { numeric: true });
+  }
+
+  // table(el, {columns, rows, search?, pageSize?, empty?, onRowClick?}) — a
+  // table.shell-table with sortable headers, an optional search box and
+  // pager. A column is {key, label, format?, align?, sortable? (true),
+  // render?(value, row) returning a Node or an HTML string — the page writes
+  // its cell templates as markup}. Plain values are always set as text.
+  // Returns {setRows, rows}.
+  function table(target, cfg) {
+    var root = resolve(target);
+    var cols = cfg.columns || [];
+    var pageSize = cfg.pageSize || 0;
+    var state = { rows: (cfg.rows || []).slice(), query: "", key: null, dir: 1, page: 0 };
+    root.innerHTML = "";
+    if (cfg.search) {
+      var search = node("input", "input skip-table-search");
+      search.type = "search";
+      search.placeholder = typeof cfg.search === "string" ? cfg.search : "Buscar…";
+      search.setAttribute("aria-label", search.placeholder);
+      search.addEventListener("input", function () {
+        state.query = search.value.trim().toLowerCase();
+        state.page = 0;
+        draw();
+      });
+      root.appendChild(search);
+    }
+    var tableEl = node("table", "shell-table");
+    var headRow = node("tr");
+    var heads = cols.map(function (col) {
+      var th = node("th", isNumberColumn(col) ? "num" : "", col.label == null ? col.key : col.label);
+      th.scope = "col";
+      if (col.sortable !== false) {
+        var toggle = function () {
+          state.dir = state.key === col.key ? -state.dir : 1;
+          state.key = col.key;
+          draw();
+        };
+        th.setAttribute("data-sort", col.key);
+        th.tabIndex = 0;
+        th.addEventListener("click", toggle);
+        th.addEventListener("keydown", function (e) {
+          if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+        });
+      }
+      headRow.appendChild(th);
+      return th;
+    });
+    var thead = node("thead");
+    var tbody = node("tbody");
+    var wrap = node("div", "skip-table-wrap");
+    var pager = node("div", "skip-pager");
+    thead.appendChild(headRow);
+    tableEl.appendChild(thead);
+    tableEl.appendChild(tbody);
+    wrap.appendChild(tableEl);
+    root.appendChild(wrap);
+    if (pageSize) root.appendChild(pager);
+
+    function visibleRows() {
+      var rows = state.rows;
+      if (state.query) {
+        rows = rows.filter(function (row) {
+          return cols.some(function (col) { return cellText(col, row).toLowerCase().indexOf(state.query) >= 0; });
+        });
+      }
+      if (state.key) {
+        var key = state.key, dir = state.dir;
+        rows = rows.slice().sort(function (a, b) { return dir * compareValues(a[key], b[key]); });
+      }
+      return rows;
+    }
+
+    function drawRow(row) {
+      var tr = node("tr");
+      cols.forEach(function (col) {
+        var td = node("td", isNumberColumn(col) ? "num" : "");
+        if (!col.render) {
+          td.textContent = cellText(col, row);
+        } else {
+          var content = col.render(row[col.key], row);
+          if (content instanceof Node) td.appendChild(content);
+          else td.innerHTML = content == null ? "" : String(content);
+        }
+        tr.appendChild(td);
+      });
+      // The row stays a row (no role) and takes focus, so a keyboard reaches
+      // the same action; keys pressed on a control inside a cell are its own.
+      if (cfg.onRowClick) {
+        tr.style.cursor = "pointer";
+        tr.tabIndex = 0;
+        tr.addEventListener("click", function () { cfg.onRowClick(row); });
+        tr.addEventListener("keydown", function (e) {
+          if (e.target !== tr || (e.key !== "Enter" && e.key !== " ")) return;
+          e.preventDefault();
+          cfg.onRowClick(row);
+        });
+      }
+      return tr;
+    }
+
+    function pagerButton(label, disabled, step) {
+      var button = node("button", "btn", label);
+      button.type = "button";
+      button.setAttribute("data-variant", "outline");
+      button.setAttribute("data-size", "sm");
+      button.disabled = disabled;
+      button.addEventListener("click", function () { state.page += step; draw(); });
+      return button;
+    }
+
+    function draw() {
+      var rows = visibleRows();
+      heads.forEach(function (th, i) {
+        if (cols[i].key === state.key) th.setAttribute("aria-sort", state.dir > 0 ? "ascending" : "descending");
+        else th.removeAttribute("aria-sort");
+      });
+      var pages = pageSize ? Math.max(1, Math.ceil(rows.length / pageSize)) : 1;
+      state.page = Math.min(state.page, pages - 1);
+      var shown = pageSize ? rows.slice(state.page * pageSize, (state.page + 1) * pageSize) : rows;
+      tbody.innerHTML = "";
+      if (!shown.length) {
+        var empty = node("td", "skip-table-empty", cfg.empty || "Nenhum registro encontrado.");
+        empty.colSpan = cols.length;
+        tbody.appendChild(node("tr")).appendChild(empty);
+      }
+      shown.forEach(function (row) { tbody.appendChild(drawRow(row)); });
+      if (!pageSize) return;
+      pager.innerHTML = "";
+      var from = rows.length ? state.page * pageSize + 1 : 0;
+      pager.appendChild(node("span", "", from + "–" + Math.min(rows.length, (state.page + 1) * pageSize) + " de " + rows.length));
+      var nav = node("div", "row gap-2");
+      nav.appendChild(pagerButton("Anterior", state.page === 0, -1));
+      nav.appendChild(pagerButton("Próxima", state.page >= pages - 1, 1));
+      pager.appendChild(nav);
+    }
+
+    draw();
+    return {
+      setRows: function (rows) { state.rows = rows.slice(); draw(); },
+      rows: visibleRows
+    };
+  }
+
+  // kpis(el, [{label, value, format?, delta?, hint?}]) — KPI cards in a
+  // responsive grid; delta is a fraction (0.12 renders as ▲ 12%).
+  function kpis(target, items) {
+    var root = resolve(target);
+    root.innerHTML = "";
+    root.classList.add("shell-grid");
+    items.forEach(function (item) {
+      var card = node("div", "panel kpi");
+      card.appendChild(node("span", "kpi-label", item.label));
+      card.appendChild(node("span", "kpi-value", item.format ? coerceFormat(item.format)(item.value) : String(item.value)));
+      if (typeof item.delta === "number") {
+        var up = item.delta >= 0;
+        card.appendChild(node("span", "kpi-delta " + (up ? "up" : "down"), (up ? "▲ " : "▼ ") + fmt.pct(Math.abs(item.delta))));
+      }
+      if (item.hint) card.appendChild(node("span", "kpi-label", item.hint));
+      root.appendChild(card);
+    });
+  }
+
+  // badge(text, variant?) — a .badge node for table cells and lists;
+  // variant is "secondary" | "outline" | "destructive" (default: primary).
+  function badge(text, variant) {
+    var el = node("span", "badge", text);
+    if (variant) el.setAttribute("data-variant", variant);
+    return el;
+  }
+
+  // tabs(el) — wires one .tabs block: [role=tab] buttons inside
+  // [role=tablist], each with aria-controls naming its [role=tabpanel].
+  function tabs(target) {
+    var root = resolve(target);
+    var buttons = Array.prototype.slice.call(root.querySelectorAll('[role="tab"]'));
+    function select(chosen) {
+      buttons.forEach(function (b) {
+        var on = b === chosen;
+        b.setAttribute("aria-selected", on ? "true" : "false");
+        b.tabIndex = on ? 0 : -1;
+        var panel = document.getElementById(b.getAttribute("aria-controls"));
+        if (panel) panel.hidden = !on;
+      });
+    }
+    buttons.forEach(function (b, i) {
+      b.addEventListener("click", function () { select(b); });
+      b.addEventListener("keydown", function (e) {
+        var step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!step) return;
+        var next = buttons[(i + step + buttons.length) % buttons.length];
+        next.focus();
+        select(next);
+      });
+    });
+    select(buttons.filter(function (b) { return b.getAttribute("aria-selected") === "true"; })[0] || buttons[0]);
+  }
+
+  // toast(message, {type?: "success" | "error", title?, duration?}) — a
+  // .toast in a shared .toaster at the bottom of the page.
+  function toast(message, opts) {
+    opts = opts || {};
+    var toaster = document.querySelector(".toaster") || document.body.appendChild(node("div", "toaster"));
+    var item = node("div", "toast");
+    item.setAttribute("role", opts.type === "error" ? "alert" : "status");
+    item.setAttribute("aria-hidden", "true");
+    if (opts.type) item.setAttribute("data-type", opts.type);
+    var content = node("div", "toast-content");
+    var section = node("section");
+    if (opts.title) section.appendChild(node("h2", "", opts.title));
+    section.appendChild(node("p", "", message));
+    content.appendChild(section);
+    item.appendChild(content);
+    toaster.appendChild(item);
+    requestAnimationFrame(function () { item.setAttribute("aria-hidden", "false"); });
+    setTimeout(function () {
+      item.setAttribute("aria-hidden", "true");
+      setTimeout(function () { item.remove(); }, 400);
+    }, opts.duration || 3000);
+  }
+
+  // Dialogs are native <dialog class="dialog">: a [data-dialog-open="id"]
+  // anywhere opens one, a [data-dialog-close] inside closes it, and a click on
+  // its backdrop closes it too. Plain dialog.showModal()/close() still work.
+  document.addEventListener("click", function (e) {
+    var target = e.target;
+    if (!(target instanceof Element)) return;
+    var opener = target.closest("[data-dialog-open]");
+    if (opener) {
+      var dialog = document.getElementById(opener.getAttribute("data-dialog-open"));
+      if (dialog && dialog.showModal && !dialog.open) dialog.showModal();
+      return;
+    }
+    var closer = target.closest("[data-dialog-close]");
+    if (closer && closer.closest("dialog")) {
+      closer.closest("dialog").close();
+      return;
+    }
+    if (target.tagName === "DIALOG" && target.classList.contains("dialog") && target.open) target.close();
+  });
+
+  // store(key, fallback) — JSON state in localStorage that never throws (a
+  // private window or a full quota falls back to memory): {get, set, update}.
+  function store(key, fallback) {
+    var memory;
+    // Set while the last write did not reach localStorage: what is stored
+    // there is older than memory until a write goes through again.
+    var unsaved = false;
+    var initial = function () { return fallback === undefined ? undefined : JSON.parse(JSON.stringify(fallback)); };
+    function get() {
+      if (!unsaved) {
+        try {
+          var raw = localStorage.getItem(key);
+          if (raw != null) return JSON.parse(raw);
+        } catch (e) { /* storage unavailable: memory below */ }
+      }
+      return memory !== undefined ? memory : initial();
+    }
+    function set(value) {
+      memory = value;
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        unsaved = false;
+      } catch (e) {
+        unsaved = true;
+      }
+      return value;
+    }
+    return { get: get, set: set, update: function (fn) { return set(fn(get())); } };
+  }
+
+  // mock — seeded random data, so a page asks for 90 days of numbers in one
+  // line instead of writing them out; the same seed gives the same data.
+  var FIRST = ["Ana", "Bruno", "Carla", "Diego", "Eduarda", "Felipe", "Gabriela", "Henrique", "Isabela", "João",
+    "Larissa", "Marcos", "Natália", "Otávio", "Paula", "Rafael", "Sofia", "Thiago", "Vanessa", "Lucas"];
+  var LAST = ["Silva", "Santos", "Oliveira", "Souza", "Pereira", "Costa", "Rodrigues", "Almeida", "Nascimento", "Lima",
+    "Araújo", "Fernandes", "Carvalho", "Gomes", "Martins", "Rocha", "Ribeiro", "Barbosa"];
+  var CITIES = ["São Paulo, SP", "Rio de Janeiro, RJ", "Belo Horizonte, MG", "Curitiba, PR", "Porto Alegre, RS",
+    "Salvador, BA", "Recife, PE", "Fortaleza, CE", "Brasília, DF", "Goiânia, GO", "Campinas, SP", "Florianópolis, SC",
+    "Manaus, AM", "Belém, PA", "Vitória, ES", "Natal, RN"];
+
+  function createMock(seed) {
+    var state = seed >>> 0;
+    function random() {
+      state = (state + 0x6d2b79f5) >>> 0;
+      var t = state;
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    }
+    function int(min, max) { return min + Math.floor(random() * (max - min + 1)); }
+    function pick(list) { return list[Math.floor(random() * list.length)]; }
+    var mock = {
+      seed: function (value) { state = value >>> 0; return mock; },
+      random: random,
+      int: int,
+      float: function (min, max, decimals) {
+        var factor = Math.pow(10, decimals == null ? 2 : decimals);
+        return Math.round((min + random() * (max - min)) * factor) / factor;
+      },
+      pick: pick,
+      chance: function (p) { return random() < p; },
+      name: function () { return pick(FIRST) + " " + pick(LAST); },
+      city: function () { return pick(CITIES); },
+      // series(n, {start, trend, noise, min, decimals}) — a walk: each value
+      // moves by trend (fraction per step) plus up to ±noise of itself.
+      series: function (n, opts) {
+        opts = opts || {};
+        var value = opts.start == null ? 100 : opts.start;
+        var factor = Math.pow(10, opts.decimals || 0);
+        var out = [];
+        for (var i = 0; i < n; i++) {
+          out.push(Math.max(opts.min == null ? 0 : opts.min, Math.round(value * factor) / factor));
+          value = value * (1 + (opts.trend || 0)) * (1 + (random() * 2 - 1) * (opts.noise == null ? 0.08 : opts.noise));
+        }
+        return out;
+      },
+      // dates(n, {end?, step?: "day" | "week" | "month"}) — ISO dates
+      // (YYYY-MM-DD), oldest first, ending at end (default: today).
+      dates: function (n, opts) {
+        opts = opts || {};
+        var end = opts.end ? new Date(opts.end) : new Date();
+        var out = [];
+        for (var i = n - 1; i >= 0; i--) {
+          var d = new Date(end.getTime());
+          if (opts.step === "month") d.setMonth(d.getMonth() - i);
+          else d.setDate(d.getDate() - i * (opts.step === "week" ? 7 : 1));
+          out.push(d.toISOString().slice(0, 10));
+        }
+        return out;
+      },
+      // rows(n, spec) — n objects; each spec value is a function(i), a list
+      // to pick from, or a constant.
+      rows: function (n, spec) {
+        var out = [];
+        for (var i = 0; i < n; i++) {
+          var row = {};
+          for (var key in spec) {
+            var value = spec[key];
+            row[key] = typeof value === "function" ? value(i) : Array.isArray(value) ? pick(value) : value;
+          }
+          out.push(row);
+        }
+        return out;
+      }
+    };
+    return mock;
+  }
+
+  window.skipShell = { fmt: fmt };
+  window.skipChart = { bar: bar, line: line, donut: donut };
+  window.skipUI = { table: table, kpis: kpis, badge: badge, tabs: tabs, toast: toast };
+  window.skipStore = store;
+  window.skipMock = createMock(20261022);
+})();
+
+</script>
+</body>
+</html>
